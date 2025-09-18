@@ -1,5 +1,6 @@
 package com.innowise.userservice.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,14 +9,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "email")
+@ToString(exclude = "cards")
 @Entity(name = "users")
 public class User {
 
@@ -35,6 +41,6 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     List<Card> cards = new ArrayList<>();
 }
