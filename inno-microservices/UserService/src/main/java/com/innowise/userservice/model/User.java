@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,7 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "email")
 @ToString(exclude = "cards")
-@Entity(name = "users")
+@Table(name = "users")
+@Entity
 public class User {
 
     @Id
@@ -42,5 +44,5 @@ public class User {
     private String email;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
-    List<Card> cards = new ArrayList<>();
+    private List<Card> cards = new ArrayList<>();
 }
