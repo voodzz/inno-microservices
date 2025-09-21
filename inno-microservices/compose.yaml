@@ -1,14 +1,32 @@
 services:
+  userservice:
+    build:
+      context: ./UserService
+      dockerfile: Dockerfile
+    container_name: 'userservice-app'
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+     SPRING_DATASOURCE_USERNAME: ${DB_USER}
+     SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
   postgres:
     image: 'postgres:latest'
     container_name: 'userservice-db'
     restart: 'always'
+    env_file:
+      - .env
     environment:
-      - 'POSTGRES_DB=userservice'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - '5432'
+      - '5433:5432'
     volumes:
       - 'db_data:/var/lib/postgresql/data'
 
