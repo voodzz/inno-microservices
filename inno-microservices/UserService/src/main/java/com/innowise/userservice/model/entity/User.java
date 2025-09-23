@@ -1,4 +1,4 @@
-package com.innowise.userservice.model;
+package com.innowise.userservice.model.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -27,22 +27,22 @@ import java.util.List;
 @Entity
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(nullable = false)
-    private String surname;
+  @Column(nullable = false)
+  private String surname;
 
-    @Column(name = "birth_date", nullable = false)
-    private LocalDate birthDate;
+  @Column(name = "birth_date", nullable = false)
+  private LocalDate birthDate;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+  @Column(unique = true, nullable = false)
+  private String email;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
-    private List<Card> cards = new ArrayList<>();
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+  private List<Card> cards = new ArrayList<>();
 }

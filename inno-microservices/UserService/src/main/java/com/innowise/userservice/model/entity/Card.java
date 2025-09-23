@@ -1,4 +1,4 @@
-package com.innowise.userservice.model;
+package com.innowise.userservice.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,20 +26,20 @@ import java.time.LocalDate;
 @Entity
 public class Card {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
+  private User user;
 
-    @Column(nullable = false, unique = true)
-    private String number;
+  @Column(nullable = false, unique = true)
+  private String number;
 
-    @Column(nullable = false)
-    private String holder;
+  @Column(nullable = false)
+  private String holder;
 
-    @Column(name = "expiration_date", nullable = false)
-    private LocalDate expirationDate;
+  @Column(name = "expiration_date", nullable = false)
+  private LocalDate expirationDate;
 }

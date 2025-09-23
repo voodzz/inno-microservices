@@ -1,6 +1,6 @@
 package com.innowise.userservice.repository;
 
-import com.innowise.userservice.model.Card;
+import com.innowise.userservice.model.entity.Card;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
