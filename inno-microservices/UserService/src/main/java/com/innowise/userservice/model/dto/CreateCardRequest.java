@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
-public record CardCreateDTO(
+public record CreateCardRequest(
     @NotNull(message = "userId must have value") Long userId,
     @NotBlank(message = "number must have value") String number,
     @NotBlank(message = "holder must have value") String holder,
