@@ -16,12 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.List;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
 
+  @Transactional
   public UserResponse createUser(CreateUserRequest request) {
     User user = userMapper.toEntity(request);
     return userMapper.toDto(userRepository.save(user));
@@ -48,6 +50,7 @@ public class UserService {
         userRepository
             .findById(request.id())
             .orElseThrow(() -> new UserNotFoundException(request.id()));
+
     int updated =
         userRepository.updateById(
             user.getId(), request.name(), request.surname(), request.birthDate());
