@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -26,6 +27,7 @@ public interface CardRepository extends JpaRepository<Card, Long> {
              WHERE id = :id
              """,
       nativeQuery = true)
+  @Transactional
   int updateById(
       @Param("id") Long id,
       @Param("user") Long userId,
