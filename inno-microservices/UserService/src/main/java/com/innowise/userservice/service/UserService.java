@@ -8,7 +8,6 @@ import com.innowise.userservice.model.dto.UpdateUserRequest;
 import com.innowise.userservice.model.dto.UserResponse;
 import com.innowise.userservice.model.entity.User;
 import com.innowise.userservice.repository.UserRepository;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
