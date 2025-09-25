@@ -3,7 +3,6 @@ package com.innowise.userservice.service;
 import com.innowise.userservice.exception.CardNotFoundException;
 import com.innowise.userservice.exception.CardUpdateException;
 import com.innowise.userservice.mapper.CardMapper;
-import com.innowise.userservice.mapper.UserMapper;
 import com.innowise.userservice.model.dto.CardResponse;
 import com.innowise.userservice.model.dto.CreateCardRequest;
 import com.innowise.userservice.model.dto.UpdateCardRequest;
@@ -39,7 +38,7 @@ public class CardService {
   }
 
   @Transactional
-  void updateCard(UpdateCardRequest request) {
+  public void updateCard(UpdateCardRequest request) {
     Card card =
         cardRepository
             .findById(request.id())
@@ -55,7 +54,7 @@ public class CardService {
   }
 
   @Transactional
-  void deleteCard(Long id) {
+  public void deleteCard(Long id) {
     Card card = cardRepository.findById(id).orElseThrow(() -> new CardNotFoundException(id));
     cardRepository.delete(card);
   }
