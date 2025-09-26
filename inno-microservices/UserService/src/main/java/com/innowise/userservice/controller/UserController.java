@@ -1,7 +1,7 @@
 package com.innowise.userservice.controller;
 
 import com.innowise.userservice.model.dto.UserDto;
-import com.innowise.userservice.service.UserService;
+import com.innowise.userservice.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,11 +22,11 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/users")
 public class UserController {
-  private final UserService service;
+  private final UserServiceImpl service;
 
   @PostMapping
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto request) {
-    UserDto response = service.createUser(request);
+    UserDto response = service.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -57,14 +57,15 @@ public class UserController {
   }
 
   @PutMapping
-  public ResponseEntity<Void> updateUser(@RequestParam Long id, @Valid @RequestBody UserDto request) {
-    service.updateUser(id, request);
+  public ResponseEntity<Void> updateUser(
+      @RequestParam Long id, @Valid @RequestBody UserDto request) {
+    service.update(id, request);
     return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-    service.deleteUser(id);
+    service.delete(id);
     return ResponseEntity.noContent().build();
   }
 }

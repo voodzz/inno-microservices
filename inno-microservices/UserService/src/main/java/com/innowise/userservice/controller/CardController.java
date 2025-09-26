@@ -1,7 +1,7 @@
 package com.innowise.userservice.controller;
 
 import com.innowise.userservice.model.dto.CardDto;
-import com.innowise.userservice.service.CardService;
+import com.innowise.userservice.service.impl.CardServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,11 +22,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/cards")
 public class CardController {
-  private final CardService service;
+  private final CardServiceImpl service;
 
   @PostMapping
   public ResponseEntity<CardDto> createCard(@Valid @RequestBody CardDto request) {
-    CardDto response = service.createCard(request);
+    CardDto response = service.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -46,14 +46,15 @@ public class CardController {
   }
 
   @PutMapping
-  public ResponseEntity<Void> updateCard(@RequestParam Long id, @Valid @RequestBody CardDto request) {
-    service.updateCard(id, request);
+  public ResponseEntity<Void> updateCard(
+      @RequestParam Long id, @Valid @RequestBody CardDto request) {
+    service.update(id, request);
     return ResponseEntity.ok().build();
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
-    service.deleteCard(id);
+    service.delete(id);
     return ResponseEntity.noContent().build();
   }
 }
