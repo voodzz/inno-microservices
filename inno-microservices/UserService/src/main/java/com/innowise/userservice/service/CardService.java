@@ -3,9 +3,7 @@ package com.innowise.userservice.service;
 import com.innowise.userservice.exception.NotFoundException;
 import com.innowise.userservice.exception.UpdateException;
 import com.innowise.userservice.mapper.CardMapper;
-import com.innowise.userservice.model.dto.CardResponse;
-import com.innowise.userservice.model.dto.CreateCardRequest;
-import com.innowise.userservice.model.dto.UpdateCardRequest;
+import com.innowise.userservice.model.dto.CardDto;
 import com.innowise.userservice.model.entity.Card;
 import com.innowise.userservice.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,26 +21,26 @@ public class CardService {
   private final CardMapper cardMapper;
 
   @Transactional
-  public CardResponse createCard(CreateCardRequest request) {
+  public CardDto createCard(CardDto request) {
     Card card = cardMapper.toEntity(request);
     return cardMapper.toDto(cardRepository.save(card));
   }
 
-  public CardResponse findById(Long id) {
+  public CardDto findById(Long id) {
     Card card = cardRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     return cardMapper.toDto(card);
   }
 
-  public List<CardResponse> findByIds(Collection<Long> ids) {
+  public List<CardDto> findByIds(Collection<Long> ids) {
     return cardMapper.toDtoList(cardRepository.findByIdIn(ids));
   }
 
   @Transactional
-  public void updateCard(UpdateCardRequest request) {
+  public void updateCard(Long id, CardDto request) {
     Card card =
         cardRepository
-            .findById(request.id())
-            .orElseThrow(() -> new NotFoundException(request.id()));
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException(id));
 
     int updated =
         cardRepository.updateById(

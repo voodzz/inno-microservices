@@ -3,9 +3,7 @@ package com.innowise.userservice.service;
 import com.innowise.userservice.exception.NotFoundException;
 import com.innowise.userservice.exception.UpdateException;
 import com.innowise.userservice.mapper.UserMapper;
-import com.innowise.userservice.model.dto.CreateUserRequest;
-import com.innowise.userservice.model.dto.UpdateUserRequest;
-import com.innowise.userservice.model.dto.UserResponse;
+import com.innowise.userservice.model.dto.UserDto;
 import com.innowise.userservice.model.entity.User;
 import com.innowise.userservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,37 +21,37 @@ public class UserService {
   private final UserMapper userMapper;
 
   @Transactional
-  public UserResponse createUser(CreateUserRequest request) {
+  public UserDto createUser(UserDto request) {
     User user = userMapper.toEntity(request);
     return userMapper.toDto(userRepository.save(user));
   }
 
-  public UserResponse findById(Long id) {
+  public UserDto findById(Long id) {
     User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     return userMapper.toDto(user);
   }
 
-  public List<UserResponse> findByIds(Collection<Long> ids) {
+  public List<UserDto> findByIds(Collection<Long> ids) {
     return userMapper.toDtoList(userRepository.findByIdIn(ids));
   }
 
-  public UserResponse findByEmail(String email) {
+  public UserDto findByEmail(String email) {
     User user =
         userRepository.findByEmail(email).orElseThrow(NotFoundException::new);
     return userMapper.toDto(user);
   }
 
-  public List<UserResponse> findAll() {
+  public List<UserDto> findAll() {
     List<User> all = userRepository.findAll();
     return userMapper.toDtoList(all);
   }
 
   @Transactional
-  public void updateUser(UpdateUserRequest request) {
+  public void updateUser(Long id, UserDto request) {
     User user =
         userRepository
-            .findById(request.id())
-            .orElseThrow(() -> new NotFoundException(request.id()));
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException(id));
 
     int updated =
         userRepository.updateById(

@@ -1,8 +1,6 @@
 package com.innowise.userservice.mapper;
 
-import com.innowise.userservice.model.dto.CreateUserRequest;
-import com.innowise.userservice.model.dto.UpdateUserRequest;
-import com.innowise.userservice.model.dto.UserResponse;
+import com.innowise.userservice.model.dto.UserDto;
 import com.innowise.userservice.model.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
@@ -11,11 +9,9 @@ import java.util.List;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
-  User toEntity(CreateUserRequest userRequest);
+  User toEntity(UserDto userRequest);
 
-  User toEntity(UpdateUserRequest userRequest);
+  UserDto toDto(User user);
 
-  UserResponse toDto(User user);
-
-  List<UserResponse> toDtoList(List<User> users);
+  List<UserDto> toDtoList(List<User> users);
 }
