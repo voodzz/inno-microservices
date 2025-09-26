@@ -10,11 +10,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface CardRepository extends JpaRepository<Card, Long> {
 
+  Card save(Card entity);
+
+  Optional<Card> findById(Long id);
+
   @Query("SELECT c FROM Card c WHERE c.id IN :ids")
   List<Card> findByIdIn(@Param("ids") Collection<Long> ids);
+
+  List<Card> findAll();
 
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query(
@@ -33,4 +40,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
       @Param("user") Long userId,
       @Param("holder") String holder,
       @Param("date") LocalDate expirationDate);
+
+  void delete(Card entity);
 }

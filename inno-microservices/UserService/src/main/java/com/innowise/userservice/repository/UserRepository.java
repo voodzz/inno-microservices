@@ -14,11 +14,17 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+  User save(User save);
+
+  Optional<User> findById(Long aLong);
+
   @Query(value = "SELECT u.* FROM users u WHERE u.id IN :ids", nativeQuery = true)
   List<User> findByIdIn(@Param("ids") Collection<Long> ids);
 
   @Query("SELECT u FROM User u WHERE u.email = :email")
   Optional<User> findByEmail(@Param("email") String email);
+
+  List<User> findAll();
 
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query(
@@ -35,4 +41,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
       @Param("name") String name,
       @Param("surname") String surname,
       @Param("birthDate") LocalDate birthDate);
+
+  void delete(User entity);
 }
