@@ -38,22 +38,30 @@ public class UserController {
 
   @GetMapping
   public ResponseEntity<List<UserDto>> findBy(
-      @RequestParam String filter,
+      @RequestParam(required = false) String filter,
       @RequestParam(required = false) List<Long> ids,
       @RequestParam(required = false) String email) {
-    switch (filter) {
-      case "ids":
+    return switch (filter) {
+      case "ids" -> {
         List<UserDto> responseList = service.findByIds(ids);
-        if (responseList.isEmpty()) {
-          return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(responseList);
-      case "email":
+        yield getListResponseEntity(responseList);
+      }
+      case "email" -> {
         UserDto user = service.findByEmail(email);
-        return ResponseEntity.ok(List.of(user));
-      default:
-        return ResponseEntity.ok(service.findAll());
+        yield ResponseEntity.ok(List.of(user));
+      }
+      default -> {
+        List<UserDto> all = service.findAll();
+        yield getListResponseEntity(all);
+      }
+    };
+  }
+
+  private ResponseEntity<List<UserDto>> getListResponseEntity(List<UserDto> all) {
+    if (all.isEmpty()) {
+      return ResponseEntity.noContent().build();
     }
+    return ResponseEntity.ok(all);
   }
 
   @PutMapping

@@ -1,6 +1,7 @@
 package com.innowise.userservice.controller;
 
 import com.innowise.userservice.model.dto.CardDto;
+import com.innowise.userservice.model.entity.Card;
 import com.innowise.userservice.service.impl.CardServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,15 @@ public class CardController {
   public ResponseEntity<CardDto> findById(@PathVariable Long id) {
     CardDto response = service.findById(id);
     return ResponseEntity.ok(response);
+  }
+
+  @GetMapping
+  public ResponseEntity<List<CardDto>> findAll() {
+    List<CardDto> cards = service.findAll();
+    if (cards.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.ok(cards);
   }
 
   @GetMapping
