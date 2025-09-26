@@ -1,7 +1,7 @@
 package com.innowise.userservice.service;
 
-import com.innowise.userservice.exception.CardNotFoundException;
-import com.innowise.userservice.exception.CardUpdateException;
+import com.innowise.userservice.exception.NotFoundException;
+import com.innowise.userservice.exception.UpdateException;
 import com.innowise.userservice.mapper.CardMapper;
 import com.innowise.userservice.model.dto.CardResponse;
 import com.innowise.userservice.model.dto.CreateCardRequest;
@@ -29,7 +29,7 @@ public class CardService {
   }
 
   public CardResponse findById(Long id) {
-    Card card = cardRepository.findById(id).orElseThrow(() -> new CardNotFoundException(id));
+    Card card = cardRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     return cardMapper.toDto(card);
   }
 
@@ -42,20 +42,20 @@ public class CardService {
     Card card =
         cardRepository
             .findById(request.id())
-            .orElseThrow(() -> new CardNotFoundException(request.id()));
+            .orElseThrow(() -> new NotFoundException(request.id()));
 
     int updated =
         cardRepository.updateById(
             card.getId(), request.userId(), request.holder(), request.expirationDate());
 
     if (updated == 0) {
-      throw new CardUpdateException(card.getId());
+      throw new UpdateException(card.getId());
     }
   }
 
   @Transactional
   public void deleteCard(Long id) {
-    Card card = cardRepository.findById(id).orElseThrow(() -> new CardNotFoundException(id));
+    Card card = cardRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     cardRepository.delete(card);
   }
 }

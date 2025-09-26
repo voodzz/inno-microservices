@@ -1,7 +1,7 @@
 package com.innowise.userservice.service;
 
-import com.innowise.userservice.exception.UserNotFoundException;
-import com.innowise.userservice.exception.UserUpateException;
+import com.innowise.userservice.exception.NotFoundException;
+import com.innowise.userservice.exception.UpdateException;
 import com.innowise.userservice.mapper.UserMapper;
 import com.innowise.userservice.model.dto.CreateUserRequest;
 import com.innowise.userservice.model.dto.UpdateUserRequest;
@@ -29,7 +29,7 @@ public class UserService {
   }
 
   public UserResponse findById(Long id) {
-    User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     return userMapper.toDto(user);
   }
 
@@ -39,8 +39,13 @@ public class UserService {
 
   public UserResponse findByEmail(String email) {
     User user =
-        userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+        userRepository.findByEmail(email).orElseThrow(NotFoundException::new);
     return userMapper.toDto(user);
+  }
+
+  public List<UserResponse> findAll() {
+    List<User> all = userRepository.findAll();
+    return userMapper.toDtoList(all);
   }
 
   @Transactional
@@ -48,20 +53,20 @@ public class UserService {
     User user =
         userRepository
             .findById(request.id())
-            .orElseThrow(() -> new UserNotFoundException(request.id()));
+            .orElseThrow(() -> new NotFoundException(request.id()));
 
     int updated =
         userRepository.updateById(
             user.getId(), request.name(), request.surname(), request.birthDate());
 
     if (updated == 0) {
-      throw new UserUpateException(user.getId());
+      throw new UpdateException(user.getId());
     }
   }
 
   @Transactional
   public void deleteUser(Long id) {
-    User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     userRepository.delete(user);
   }
 }

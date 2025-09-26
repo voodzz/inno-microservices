@@ -13,6 +13,14 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiErrorHandler extends ResponseEntityExceptionHandler {
+  private static final String ERROR = "Error";
+  private static final String TIMESTAMP = "Timestamp";
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<String> handleGeneralException(Exception ex) {
+    return ResponseEntity.internalServerError().body(ex.getMessage());
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, String>> handleNotValidException(
       MethodArgumentNotValidException ex) {
@@ -23,11 +31,11 @@ public class ApiErrorHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.badRequest().body(errors);
   }
 
-  @ExceptionHandler({UserUpateException.class, CardUpdateException.class})
+  @ExceptionHandler(UpdateException.class)
   public ResponseEntity<Map<String, String>> handleUpdateException(RuntimeException ex) {
     Map<String, String> error = new HashMap<>();
-    error.put("Error", ex.getMessage());
-    error.put("Timestamp", LocalDateTime.now().toString());
+    error.put(ERROR, ex.getMessage());
+    error.put(TIMESTAMP, LocalDateTime.now().toString());
     return ResponseEntity.badRequest().body(error);
   }
 }
