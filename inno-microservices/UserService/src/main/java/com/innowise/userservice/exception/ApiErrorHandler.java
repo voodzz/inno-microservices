@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class ApiErrorHandler extends ResponseEntityExceptionHandler {
+public class ApiErrorHandler {
   private static final String ERROR = "Error";
   private static final String TIMESTAMP = "Timestamp";
 

@@ -37,7 +37,7 @@ public class CardController {
     return ResponseEntity.ok(response);
   }
 
-  @GetMapping
+  @GetMapping(params = "!ids")
   public ResponseEntity<List<CardDto>> findAll() {
     List<CardDto> cards = service.findAll();
     if (cards.isEmpty()) {
@@ -46,7 +46,7 @@ public class CardController {
     return ResponseEntity.ok(cards);
   }
 
-  @GetMapping
+  @GetMapping(params = "ids")
   public ResponseEntity<List<CardDto>> findByIds(@RequestParam List<Long> ids) {
     List<CardDto> cards = service.findByIds(ids);
     if (cards.isEmpty()) {

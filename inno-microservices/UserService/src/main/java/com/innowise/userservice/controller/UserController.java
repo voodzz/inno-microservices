@@ -41,7 +41,11 @@ public class UserController {
       @RequestParam(required = false) String filter,
       @RequestParam(required = false) List<Long> ids,
       @RequestParam(required = false) String email) {
-    return switch (filter) {
+      if (filter == null) {
+          List<UserDto> all = service.findAll();
+          return getListResponseEntity(all);
+      }
+      return switch (filter) {
       case "ids" -> {
         List<UserDto> responseList = service.findByIds(ids);
         yield getListResponseEntity(responseList);
