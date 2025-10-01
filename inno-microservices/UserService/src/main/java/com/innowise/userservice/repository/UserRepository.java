@@ -37,6 +37,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findById(Long aLong);
 
   /**
+   * Retrieves a user by their unique identifier and fetches the cards of a user
+   *
+   * @param id the ID of the user
+   * @return an {@link Optional} containing the user if found, otherwise empty
+   */
+  @Query("SELECT u FROM User u LEFT JOIN FETCH u.cards WHERE u.id = :id")
+  Optional<User> findByIdWithCards(@Param("id") Long id);
+
+  /**
    * Checks if a user with the specified email exists.
    *
    * @param email the email address to check
@@ -65,6 +74,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
    */
   @Query("SELECT u FROM User u WHERE u.email = :email")
   Optional<User> findByEmail(@Param("email") String email);
+
+  /**
+   * Retrieves a user by their unique identifier and fetches the cards of a user
+   *
+   * @param email the email address of the user
+   * @return an {@link Optional} containing the user if found, otherwise empty
+   */
+  @Query("SELECT u FROM User u LEFT JOIN FETCH u.cards WHERE u.email = :email")
+  Optional<User> findByEmailWithCards(@Param("email") String email);
 
   /**
    * Retrieves all users.

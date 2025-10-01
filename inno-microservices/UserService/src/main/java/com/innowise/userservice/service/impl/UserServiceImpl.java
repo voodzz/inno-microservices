@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
   @Override
   @Cacheable(value = CACHE_NAME, key = "#id")
   public UserDto findById(Long id) {
-    User user = userRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
+    User user = userRepository.findByIdWithCards(id).orElseThrow(() -> new NotFoundException(id));
     return userMapper.toDto(user);
   }
 
@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
   public UserDto findByEmail(String email) {
     User user =
         userRepository
-            .findByEmail(email)
+            .findByEmailWithCards(email)
             .orElseThrow(
                 () -> new NotFoundException("User with email '%s' not found".formatted(email)));
     return userMapper.toDto(user);
