@@ -278,7 +278,6 @@ public class UserServiceImplTests {
 
   @Test
   void findAll_ShouldReturnAllUserDtos() {
-    // Arrange
     User user2 = new User();
     user2.setId(2L);
     UserDto userDto2 =
