@@ -21,12 +21,7 @@ jobs:
     services:
       redis:
         image: redis:7-alpine
-        options: >
-          --name redis_server
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --name redis_server --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 6379:6379
           
@@ -36,12 +31,7 @@ jobs:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpassword
-        options: >
-          --name postgres_server
-          --health-cmd "pg_isready -U testuser -d testdb"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --name postgres_server --health-cmd "pg_isready -U testuser -d testdb" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 5432:5432
           
