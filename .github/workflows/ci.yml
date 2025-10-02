@@ -103,13 +103,13 @@ jobs:
         path: ${{ env.MODULE_PATH }}/build/libs/*.jar
         retention-days: 1
         
-    - name: Publish Test Report (Optional, highly recommended)
+    - name: Publish Test Report
       if: always()
-      uses: asad-sajjan/test-report-action@v1.2.0
+      uses: dorny/test-reporter@v1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        test-report-path: ${{ env.MODULE_PATH }}/build/test-results/test/TEST-*.xml
+        name: Unit Tests
+        path: ${{ env.MODULE_PATH }}/build/test-results/test/TEST-*.xml
+        reporter: java-junit
 
   sonarqube-analysis:
     needs: build-and-test
