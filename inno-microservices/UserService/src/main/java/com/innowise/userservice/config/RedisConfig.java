@@ -1,19 +1,22 @@
 package com.innowise.userservice.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.innowise.userservice.model.dto.UserDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -38,7 +41,11 @@ public class RedisConfig {
   @Bean
   public RedisCacheManager cacheManager(
       RedisConnectionFactory connectionFactory, ObjectMapper redisObjectMapper) {
-    RedisCacheConfiguration configuration =
+
+    Jackson2JsonRedisSerializer<UserDto> userDtoSerializer =
+        new Jackson2JsonRedisSerializer<>(redisObjectMapper, UserDto.class);
+
+    RedisCacheConfiguration userCacheConfig =
         RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofMinutes(10))
             .disableCachingNullValues()
@@ -46,9 +53,10 @@ public class RedisConfig {
                 RedisSerializationContext.SerializationPair.fromSerializer(
                     new StringRedisSerializer()))
             .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(
-                    new GenericJackson2JsonRedisSerializer(redisObjectMapper)));
+                RedisSerializationContext.SerializationPair.fromSerializer(userDtoSerializer));
 
-    return RedisCacheManager.builder(connectionFactory).cacheDefaults(configuration).build();
+    return RedisCacheManager.builder(connectionFactory)
+        .withCacheConfiguration("USER_CACHE", userCacheConfig)
+        .build();
   }
 }
