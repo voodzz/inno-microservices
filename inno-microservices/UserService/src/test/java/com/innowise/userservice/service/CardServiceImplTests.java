@@ -7,6 +7,7 @@ import com.innowise.userservice.model.dto.CardDto;
 import com.innowise.userservice.model.entity.Card;
 import com.innowise.userservice.model.entity.User;
 import com.innowise.userservice.repository.CardRepository;
+import com.innowise.userservice.repository.UserRepository;
 import com.innowise.userservice.service.impl.CardServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,9 +104,7 @@ public class CardServiceImplTests {
     List<Long> cardIds = List.of(CARD_ID, 11L);
     List<Card> cardList = List.of(card, new Card());
     List<CardDto> dtoList =
-        List.of(
-            cardDto,
-            new CardDto(11L, 2L, "...", "...", LocalDate.now().plusYears(1)));
+        List.of(cardDto, new CardDto(11L, 2L, "...", "...", LocalDate.now().plusYears(1)));
 
     when(cardRepository.findByIdIn(cardIds)).thenReturn(cardList);
     when(cardMapper.toDtoList(cardList)).thenReturn(dtoList);

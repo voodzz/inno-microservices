@@ -2,8 +2,11 @@ package com.innowise.userservice.mapper;
 
 import com.innowise.userservice.model.dto.CardDto;
 import com.innowise.userservice.model.entity.Card;
+import com.innowise.userservice.model.entity.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.Named;
 
 import java.util.List;
 
@@ -21,6 +24,7 @@ public interface CardMapper {
    * @param cardRequest the card DTO containing request data
    * @return the corresponding {@link Card} entity
    */
+  @Mapping(target = "user", source = "userId", qualifiedByName = "mapUserIdToUser")
   Card toEntity(CardDto cardRequest);
 
   /**
@@ -29,6 +33,7 @@ public interface CardMapper {
    * @param card the card entity
    * @return the corresponding {@link CardDto}
    */
+  @Mapping(target = "userId", source = "user.id")
   CardDto toDto(Card card);
 
   /**
@@ -38,4 +43,25 @@ public interface CardMapper {
    * @return a list of corresponding {@link CardDto} objects
    */
   List<CardDto> toDtoList(List<Card> cards);
+
+  /**
+   * Maps a user ID to a minimal {@code User} object.
+   *
+   * <p>This method is intended to be used by MapStruct's mapping mechanism (via the {@code @Named}
+   * annotation) to set a relationship object when only the user's ID is available in the source
+   * object.
+   *
+   * @param userId The ID of the user to be mapped.
+   * @return A new {@code User} object with only the ID field set, or {@code null} if the input ID
+   *     is {@code null}.
+   */
+  @Named("mapUserIdToUser")
+  default User mapUserIdToUser(Long userId) {
+    if (userId == null) {
+      return null;
+    }
+    User user = new User();
+    user.setId(userId);
+    return user;
+  }
 }
