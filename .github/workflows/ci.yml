@@ -116,6 +116,7 @@ jobs:
         SPRING_DATASOURCE_USERNAME: testuser
         SPRING_DATASOURCE_PASSWORD: testpassword
         SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+        TESTCONTAINERS_REUSE_ENABLE: true
 
       run: |
         echo "--- [STEP 2: TESTING] Запуск тестов UserService ---"
