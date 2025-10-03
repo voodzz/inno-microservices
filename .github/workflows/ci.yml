@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  checks: write
+  statuses: write
+
 env:
   # default fallback (will be overridden by detect step if a gradlew is found)
   MODULE_PATH: .
