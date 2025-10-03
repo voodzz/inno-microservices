@@ -22,8 +22,8 @@ env:
   DOCKER_IMAGE: userservice:latest
 
   # Sonar values: set appropriate values for your project / SonarCloud org
-  SONAR_PROJECT_KEY: UserService
-  SONAR_ORG: your-sonar-org     # required for SonarCloud
+  SONAR_PROJECT_KEY: voodzz_inno-microservices
+  SONAR_ORG: voodzz    # required for SonarCloud
   SONAR_HOST_URL: https://sonarcloud.io
 
 jobs:
