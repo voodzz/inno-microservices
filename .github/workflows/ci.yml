@@ -143,70 +143,82 @@ jobs:
         reporter: java-junit
 
   sonarqube-analysis:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+  needs: build-and-test
+  runs-on: ubuntu-latest
+  if: github.event_name == 'push' || github.event_name == 'pull_request'
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+  steps:
+  - name: Checkout Code
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
-    - name: Show workspace (for debugging)
-      run: |
-        echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
-        ls -la .
-        echo "=== find first-level dirs ==="
-        find . -maxdepth 2 -type d -print
-
-    - name: Detect module path (find gradlew)
-      id: detect-sonar
-      run: |
-        if [ -x "./gradlew" ] || [ -f "./gradlew" ]; then
-          echo "Found gradlew at repo root"
-          echo "MODULE_PATH=." >> $GITHUB_ENV
+  - name: Detect module path (find gradlew)
+    id: detect-sonar
+    run: |
+      if [ -x "./gradlew" ] || [ -f "./gradlew" ]; then
+        echo "MODULE_PATH=." >> $GITHUB_ENV
+      else
+        FOUND=$(find . -maxdepth 4 -type f -name gradlew -printf '%h\n' | head -n 1 || true)
+        if [ -n "$FOUND" ]; then
+          STRIPPED=${FOUND#./}
+          echo "MODULE_PATH=$STRIPPED" >> $GITHUB_ENV
         else
-          FOUND=$(find . -maxdepth 4 -type f -name gradlew -printf '%h\n' | head -n 1 || true)
-          if [ -n "$FOUND" ]; then
-            STRIPPED=${FOUND#./}
-            echo "Found gradlew in: $STRIPPED"
-            echo "MODULE_PATH=$STRIPPED" >> $GITHUB_ENV
-          else
-            echo "No gradlew found; falling back to '.'"
-            echo "MODULE_PATH=." >> $GITHUB_ENV
-          fi
+          echo "MODULE_PATH=." >> $GITHUB_ENV
         fi
-        echo "Detected MODULE_PATH = $MODULE_PATH (env will be available to next steps)"
+      fi
+      echo "Detected MODULE_PATH = $MODULE_PATH"
 
-    - name: Ensure gradlew is executable (sonar)
-      run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
+  - name: Ensure gradlew is executable (sonar)
+    run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
 
-    - name: Setup Java ${{ env.JAVA_VERSION }}
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: ${{ env.JAVA_VERSION }}
+  - name: Setup Java ${{ env.JAVA_VERSION }}
+    uses: actions/setup-java@v4
+    with:
+      distribution: 'temurin'
+      java-version: ${{ env.JAVA_VERSION }}
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: ${{ env.GRADLE_VERSION }}
+  - name: Setup Gradle
+    uses: gradle/actions/setup-gradle@v3
+    with:
+      gradle-version: ${{ env.GRADLE_VERSION }}
 
-    - name: 3. SonarQube Analysis
-      working-directory: ${{ env.MODULE_PATH }}
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      run: |
-        echo "--- [STEP 3: SONARQUBE] Запуск анализа кода (cwd: $PWD) ---"
-        ./gradlew sonarqube \
-          -Dsonar.projectKey="${{ github.repository }}/UserService" \
-          -Dsonar.sources=src/main/java \
-          -Dsonar.tests=src/test/java \
-          -Dsonar.java.binaries=build/classes/java/main \
-          -Dsonar.junit.reportPaths=build/test-results/test \
-          -Dsonar.jacoco.reportPaths=build/jacoco/test.exec
+  - name: Build module (prepare for Sonar analysis)
+    working-directory: ${{ env.MODULE_PATH }}
+    run: |
+      echo "Building module before Sonar (cwd: $PWD)"
+      # соберём без запуска тестов — анализ будет работать с артефактами
+      ./gradlew build -x test
+
+  - name: Sanity - print Sonar env (masked)
+    run: |
+      echo "SONAR_HOST_URL is set? -> ${SONAR_HOST_URL:+yes}"
+      echo "SONAR_TOKEN is set? -> ${SONAR_TOKEN:+yes}"
+    env:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  - name: 3. SonarQube Analysis (gradle 'sonar' task, skip compile)
+    working-directory: ${{ env.MODULE_PATH }}
+    env:
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    run: |
+      if [ -z "$SONAR_HOST_URL" ] || [ -z "$SONAR_TOKEN" ]; then
+        echo "ERROR: SONAR_HOST_URL and SONAR_TOKEN must be set in repository secrets."
+        exit 1
+      fi
+
+      echo "--- Running Sonar analysis (cwd: $PWD) ---"
+      # use 'sonar' (replacement for deprecated 'sonarqube') and skip implicit compile
+      ./gradlew sonar \
+        -Dsonar.host.url="$SONAR_HOST_URL" \
+        -Dsonar.login="$SONAR_TOKEN" \
+        -Dsonar.projectKey="${{ github.repository }}/UserService" \
+        -Dsonar.sources=src/main/java \
+        -Dsonar.tests=src/test/java \
+        -Dsonar.java.binaries=build/classes/java/main \
+        -Dsonar.gradle.skipCompile=true
 
   docker-build-push:
     needs: sonarqube-analysis
