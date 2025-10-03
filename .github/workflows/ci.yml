@@ -14,17 +14,20 @@ permissions:
   statuses: write
 
 env:
+  # defaults — override as needed
   MODULE_PATH: .
   GRADLE_PROJECT_NAME: UserService
   JAVA_VERSION: '21'
   GRADLE_VERSION: '8.14.3'
   DOCKER_IMAGE: userservice:latest
-  SONAR_PROJECT_KEY: UserService
-  SONAR_ORG: your-sonar-org
+
+  # Sonar values: set appropriate values for your project / SonarCloud org
+  SONAR_PROJECT_KEY: voodzz_inno-microservices
+  SONAR_ORG: voodzz    # required for SonarCloud
   SONAR_HOST_URL: https://sonarcloud.io
 
 jobs:
-  build-test-analyze:
+  build-and-test:
     runs-on: ubuntu-latest
 
     services:
@@ -48,10 +51,12 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Show workspace
+    - name: Show workspace (for debugging)
       run: |
         echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
         ls -la .
+        echo "=== find first-level dirs ==="
+        find . -maxdepth 2 -type d -print
 
     - name: Detect module path (find gradlew)
       id: detect
@@ -79,14 +84,16 @@ jobs:
     - name: Ensure gradlew is executable
       run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
 
-    - name: 1. Build (Skip Tests)
+    - name: 1. Build UserService (Skip Tests)
       working-directory: ${{ env.MODULE_PATH }}
-      run: ./gradlew build -x test
+      run: |
+        echo "--- [STEP 1: BUILD] ---"
+        ./gradlew build -x test
 
     - name: Wait for Database and Redis Services
       run: |
-        for i in $(seq 1 10); do nc -z -w 1 postgres 5432 && echo "Postgres is up!" && break; sleep 1; done
-        for i in $(seq 1 10); do nc -z -w 1 redis 6379 && echo "Redis is up!" && break; sleep 1; done
+        for i in $(seq 1 10); do nc -z -w 1 postgres 5432 && echo "Postgres is up!" && break; echo "Waiting... ($i)"; sleep 1; done
+        for i in $(seq 1 10); do nc -z -w 1 redis 6379 && echo "Redis is up!" && break; echo "Waiting... ($i)"; sleep 1; done
 
     - name: 2. Run Unit and Integration Tests
       working-directory: ${{ env.MODULE_PATH }}
@@ -98,7 +105,9 @@ jobs:
         SPRING_DATASOURCE_PASSWORD: testpassword
         SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
         TESTCONTAINERS_REUSE_ENABLE: true
-      run: ./gradlew test
+      run: |
+        echo "--- [STEP 2: TESTING] ---"
+        ./gradlew test
 
     - name: Upload JAR Artifact
       uses: actions/upload-artifact@v4
@@ -115,18 +124,49 @@ jobs:
         path: ${{ env.MODULE_PATH }}/build/test-results/test/TEST-*.xml
         reporter: java-junit
 
-    - name: 3. SonarQube Analysis
+    # ---------- Sonar detection + analysis ----------
+    - name: Detect Sonar Gradle plugin
+      id: sonar-detect
+      working-directory: ${{ env.MODULE_PATH }}
+      run: |
+        # look for common plugin declarations in Gradle files
+        if grep -R "id ['\"]org.sonarqube['\"]" . || grep -R "apply plugin: ['\"]org.sonarqube['\"]" . || grep -R "org.sonarqube" build.gradle* | grep -q .; then
+          echo "Found Sonar Gradle plugin"
+          echo "GRADLE_SONAR_PLUGIN_FOUND=true" >> $GITHUB_ENV
+        else
+          echo "No Sonar Gradle plugin found"
+          echo "GRADLE_SONAR_PLUGIN_FOUND=false" >> $GITHUB_ENV
+        fi
+
+    - name: SonarQube via Gradle (recommended)
+      if: ${{ env.GRADLE_SONAR_PLUGIN_FOUND == 'true' }}
+      working-directory: ${{ env.MODULE_PATH }}
+      run: |
+        echo "Running Gradle sonarqube task (recommended for Gradle projects)"
+        ./gradlew sonarqube \
+          -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
+          -Dsonar.organization=${{ env.SONAR_ORG }} \
+          -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+    - name: SonarCloud Scanner CLI (fallback)
+      if: ${{ env.GRADLE_SONAR_PLUGIN_FOUND == 'false' }}
       uses: sonarsource/sonarcloud-github-action@v2
       with:
-        organization: ${{ env.SONAR_ORG }}
-        projectKey: ${{ env.SONAR_PROJECT_KEY }}
         projectBaseDir: ${{ env.MODULE_PATH }}
+        args: >
+          -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+          -Dsonar.organization=${{ env.SONAR_ORG }}
+          -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.sources=src/main/java
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+    # ---------- Docker build & optional push ----------
     - name: 4. Build Docker Image
       run: |
-        echo "--- [STEP 4: DOCKER BUILD] Creating Docker image $DOCKER_IMAGE ---"
+        echo "--- [STEP 4: DOCKER BUILD] ---"
         docker build -t $DOCKER_IMAGE ${{ env.MODULE_PATH }}
 
     - name: 5. Push Docker Image (optional)
