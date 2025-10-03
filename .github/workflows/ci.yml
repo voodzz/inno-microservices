@@ -9,22 +9,22 @@ on:
       - main
 
 env:
-  MODULE_PATH: inno-microservices/UserService
+  MODULE_PATH: inno-microservices/inno-microservices/UserService
   GRADLE_PROJECT_NAME: UserService
   JAVA_VERSION: '21'
-  GRADLE_VERSION: '8.14.3'      
+  GRADLE_VERSION: '8.14.3'
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     services:
       redis:
         image: redis:7-alpine
         options: --name redis_server --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 6379:6379
-          
+
       postgres:
         image: postgres:14-alpine
         env:
@@ -34,7 +34,7 @@ jobs:
         options: --name postgres_server --health-cmd "pg_isready -U testuser -d testdb" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 5432:5432
-          
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -44,22 +44,24 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: ${{ env.JAVA_VERSION }}
-        
+
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: ${{ env.GRADLE_VERSION }}
 
     - name: Ensure gradlew is executable
-      run: chmod +x ./${{env.MODULE_PATH}}/gradlew
+      run: chmod +x ${{ env.MODULE_PATH }}/gradlew
 
     - name: 1. Build UserService (Skip Tests)
+      working-directory: ${{ env.MODULE_PATH }}
       run: |
         echo "--- [STEP 1: BUILD] Запуск сборки UserService ---"
-        ./${{env.MODULE_PATH}}/gradlew :${{ env.GRADLE_PROJECT_NAME }}:build -x test
-        
+        ./gradlew build -x test
+
     - name: Wait for Database and Redis Services
       run: |
         echo "Waiting for PostgreSQL service (postgres:5432)..."
-        # Проверяем доступность порта 5432 на хосте 'postgres'
         for i in $(seq 1 10); do 
           nc -z -w 1 postgres 5432 && echo "Postgres is up!" && break
           echo "Waiting... ($i)"
@@ -67,7 +69,6 @@ jobs:
         done
 
         echo "Waiting for Redis service (redis:6379)..."
-        # Проверяем доступность порта 6379 на хосте 'redis'
         for i in $(seq 1 10); do 
           nc -z -w 1 redis 6379 && echo "Redis is up!" && break
           echo "Waiting... ($i)"
@@ -75,27 +76,27 @@ jobs:
         done
 
     - name: 2. Run Unit and Integration Tests
+      working-directory: ${{ env.MODULE_PATH }}
       env:
         SPRING_REDIS_HOST: redis
         SPRING_REDIS_PORT: 6379
-        
+
         SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testdb
         SPRING_DATASOURCE_USERNAME: testuser
         SPRING_DATASOURCE_PASSWORD: testpassword
         SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
-        
+
       run: |
         echo "--- [STEP 2: TESTING] Запуск тестов UserService ---"
-        # Запуск всех тестов
-        ./gradlew :${{ env.GRADLE_PROJECT_NAME }}:test
-        
+        ./gradlew test
+
     - name: Upload JAR Artifact
       uses: actions/upload-artifact@v4
       with:
         name: UserService-jar
         path: ${{ env.MODULE_PATH }}/build/libs/*.jar
         retention-days: 1
-        
+
     - name: Publish Test Report
       if: always()
       uses: dorny/test-reporter@v1
@@ -108,52 +109,54 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0 
+        fetch-depth: 0
 
     - name: Setup Java ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: ${{ env.JAVA_VERSION }}
-        
+
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
-      
+      with:
+        gradle-version: ${{ env.GRADLE_VERSION }}
+
     - name: 3. SonarQube Analysis
+      working-directory: ${{ env.MODULE_PATH }}
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        
       run: |
         echo "--- [STEP 3: SONARQUBE] Запуск анализа кода ---"
-        ./gradlew :${{ env.GRADLE_PROJECT_NAME }}:sonarqube \
-          -Dsonar.projectKey="${{ github.repository }}/${{ env.MODULE_PATH }}" \
-          -Dsonar.sources=${{ env.MODULE_PATH }}/src/main/java \
-          -Dsonar.tests=${{ env.MODULE_PATH }}/src/test/java \
-          -Dsonar.java.binaries=${{ env.MODULE_PATH }}/build/classes/java/main \
-          -Dsonar.junit.reportPaths=${{ env.MODULE_PATH }}/build/test-results/test \
-          -Dsonar.jacoco.reportPaths=${{ env.MODULE_PATH }}/build/jacoco/test.exec
-          
+        ./gradlew sonarqube \
+          -Dsonar.projectKey="${{ github.repository }}/UserService" \
+          -Dsonar.sources=src/main/java \
+          -Dsonar.tests=src/test/java \
+          -Dsonar.java.binaries=build/classes/java/main \
+          -Dsonar.junit.reportPaths=build/test-results/test \
+          -Dsonar.jacoco.reportPaths=build/jacoco/test.exec
+
   docker-build-push:
     needs: sonarqube-analysis
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-      
+
     - name: Download JAR Artifact
       uses: actions/download-artifact@v4
       with:
         name: UserService-jar
         path: ${{ env.MODULE_PATH }}/build/libs/
-        
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -163,7 +166,7 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-        
+
     - name: 4. Build and Push Docker Image
       uses: docker/build-push-action@v5
       with:
