@@ -14,16 +14,14 @@ permissions:
   statuses: write
 
 env:
-  # defaults — override as needed
   MODULE_PATH: .
   GRADLE_PROJECT_NAME: UserService
   JAVA_VERSION: '21'
   GRADLE_VERSION: '8.14.3'
   DOCKER_IMAGE: userservice:latest
 
-  # Sonar values: set appropriate values for your project / SonarCloud org
   SONAR_PROJECT_KEY: voodzz_inno-microservices
-  SONAR_ORG: voodzz    # required for SonarCloud
+  SONAR_ORG: voodzz
   SONAR_HOST_URL: https://sonarcloud.io
 
 jobs:
@@ -95,7 +93,7 @@ jobs:
         for i in $(seq 1 10); do nc -z -w 1 postgres 5432 && echo "Postgres is up!" && break; echo "Waiting... ($i)"; sleep 1; done
         for i in $(seq 1 10); do nc -z -w 1 redis 6379 && echo "Redis is up!" && break; echo "Waiting... ($i)"; sleep 1; done
 
-    - name: 2. Run Unit and Integration Tests
+    - name: 2. Run Unit and Integration Tests + JaCoCo
       working-directory: ${{ env.MODULE_PATH }}
       env:
         SPRING_REDIS_HOST: redis
@@ -106,8 +104,8 @@ jobs:
         SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
         TESTCONTAINERS_REUSE_ENABLE: true
       run: |
-        echo "--- [STEP 2: TESTING] ---"
-        ./gradlew test
+        echo "--- [STEP 2: TESTING + JACOCO] ---"
+        ./gradlew test jacocoTestReport --no-daemon
 
     - name: Upload JAR Artifact
       uses: actions/upload-artifact@v4
@@ -124,12 +122,20 @@ jobs:
         path: ${{ env.MODULE_PATH }}/build/test-results/test/TEST-*.xml
         reporter: java-junit
 
-    # ---------- Sonar detection + analysis ----------
+    - name: Publish JaCoCo report (HTML + XML)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jacoco-report
+        path: |
+          ${{ env.MODULE_PATH }}/build/reports/jacoco/test/html
+          ${{ env.MODULE_PATH }}/build/reports/jacoco/test/jacocoTestReport.xml
+        retention-days: 7
+
     - name: Detect Sonar Gradle plugin
       id: sonar-detect
       working-directory: ${{ env.MODULE_PATH }}
       run: |
-        # look for common plugin declarations in Gradle files
         if grep -R "id ['\"]org.sonarqube['\"]" . || grep -R "apply plugin: ['\"]org.sonarqube['\"]" . || grep -R "org.sonarqube" build.gradle* | grep -q .; then
           echo "Found Sonar Gradle plugin"
           echo "GRADLE_SONAR_PLUGIN_FOUND=true" >> $GITHUB_ENV
@@ -147,7 +153,8 @@ jobs:
           -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }} \
           -Dsonar.organization=${{ env.SONAR_ORG }} \
           -Dsonar.host.url=${{ env.SONAR_HOST_URL }} \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          -Dsonar.coverage.jacoco.xmlReportPaths=${{ env.MODULE_PATH }}/build/reports/jacoco/test/jacocoTestReport.xml
 
     - name: SonarCloud Scanner CLI (fallback)
       if: ${{ env.GRADLE_SONAR_PLUGIN_FOUND == 'false' }}
@@ -160,10 +167,10 @@ jobs:
           -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
           -Dsonar.sources=src/main/java
+          -Dsonar.coverage.jacoco.xmlReportPaths=${{ env.MODULE_PATH }}/build/reports/jacoco/test/jacocoTestReport.xml
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-    # ---------- Docker build & optional push ----------
     - name: 4. Build Docker Image
       run: |
         echo "--- [STEP 4: DOCKER BUILD] ---"
