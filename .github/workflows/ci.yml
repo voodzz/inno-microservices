@@ -133,9 +133,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          # fetch-depth: 0 is correct for Sonar to analyze the whole history
           fetch-depth: 0
-
+  
       - name: Detect module path (find gradlew)
         id: detect-sonar
         run: |
@@ -151,60 +150,44 @@ jobs:
             fi
           fi
           echo "Detected MODULE_PATH = $MODULE_PATH"
-
-      # --- START: SonarQube analysis changes ---
-      - name: Download JaCoCo Coverage Report
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report
-          # Download the artifact to the location where SonarQube will look for it
-          path: ${{ env.MODULE_PATH }}/build/reports/jacoco/test/
-
-      - name: Ensure gradlew is executable (sonar)
+  
+      - name: Ensure gradlew is executable
         run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
-
+  
       - name: Setup Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
-
+  
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
-
+  
       - name: Build module (prepare for Sonar analysis)
         working-directory: ${{ env.MODULE_PATH }}
-        # This step is necessary to re-compile the code for the Sonar scanner
         run: ./gradlew build -x test
-
-      - name: "Sanity - print Sonar env (masked)"
+  
+      - name: "Sanity - print Sonar token"
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          # Simplified the check; if secrets are missing, the sonar task will fail
-          echo "SONAR_HOST_URL is set? -> ${SONAR_HOST_URL:+yes}"
           echo "SONAR_TOKEN is set? -> ${SONAR_TOKEN:+yes}"
-
-      - name: 3. SonarQube Analysis
+  
+      - name: Run SonarCloud Analysis
         working-directory: ${{ env.MODULE_PATH }}
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./gradlew sonar \
-            -Dsonar.host.url="$SONAR_HOST_URL" \
             -Dsonar.login="$SONAR_TOKEN" \
             -Dsonar.projectKey="${{ github.repository }}/UserService" \
             -Dsonar.sources=src/main/java \
             -Dsonar.tests=src/test/java \
             -Dsonar.java.binaries=build/classes/java/main \
-            # NEW: Point SonarQube to the JaCoCo XML report downloaded above
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ env.MODULE_PATH }}/build/reports/jacoco/test/jacocoTestReport.xml \
             -Dsonar.gradle.skipCompile=true
-      # --- END: SonarQube analysis changes ---
+
 
   docker-build-push:
     needs: sonarqube-analysis
