@@ -9,7 +9,8 @@ on:
       - main
 
 env:
-  MODULE_PATH: inno-microservices/inno-microservices/UserService
+  # default fallback (will be overridden by detect step if a gradlew is found)
+  MODULE_PATH: .
   GRADLE_PROJECT_NAME: UserService
   JAVA_VERSION: '21'
   GRADLE_VERSION: '8.14.3'
@@ -39,6 +40,35 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
+    - name: Show workspace (for debugging)
+      run: |
+        echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+        ls -la .
+        echo "=== find first-level dirs ==="
+        find . -maxdepth 2 -type d -print
+
+    - name: Detect module path (find gradlew)
+      id: detect
+      run: |
+        # If gradlew exists at repo root use that, otherwise search up to 4 levels deep
+        if [ -x "./gradlew" ] || [ -f "./gradlew" ]; then
+          echo "Found gradlew at repo root"
+          echo "MODULE_PATH=." >> $GITHUB_ENV
+        else
+          # find directories containing a file named 'gradlew'
+          FOUND=$(find . -maxdepth 4 -type f -name gradlew -printf '%h\n' | head -n 1 || true)
+          if [ -n "$FOUND" ]; then
+            # strip leading ./ if present
+            STRIPPED=${FOUND#./}
+            echo "Found gradlew in: $STRIPPED"
+            echo "MODULE_PATH=$STRIPPED" >> $GITHUB_ENV
+          else
+            echo "No gradlew found; falling back to '.'"
+            echo "MODULE_PATH=." >> $GITHUB_ENV
+          fi
+        fi
+        echo "Detected MODULE_PATH = $MODULE_PATH (env will be available to next steps)"
+
     - name: Setup Java ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
@@ -51,12 +81,13 @@ jobs:
         gradle-version: ${{ env.GRADLE_VERSION }}
 
     - name: Ensure gradlew is executable
-      run: chmod +x ${{ env.MODULE_PATH }}/gradlew
+      run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
+      # if MODULE_PATH is '.' this targets ./gradlew
 
     - name: 1. Build UserService (Skip Tests)
       working-directory: ${{ env.MODULE_PATH }}
       run: |
-        echo "--- [STEP 1: BUILD] Запуск сборки UserService ---"
+        echo "--- [STEP 1: BUILD] Запуск сборки UserService in $PWD ---"
         ./gradlew build -x test
 
     - name: Wait for Database and Redis Services
@@ -133,7 +164,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       run: |
-        echo "--- [STEP 3: SONARQUBE] Запуск анализа кода ---"
+        echo "--- [STEP 3: SONARQUBE] Запуск анализа кода (cwd: $PWD) ---"
         ./gradlew sonarqube \
           -Dsonar.projectKey="${{ github.repository }}/UserService" \
           -Dsonar.sources=src/main/java \
