@@ -10,7 +10,7 @@ on:
 
 env:
   MODULE_PATH: inno-microservices/UserService
-  GRADLE_PROJECT_NAME: inno-microservices:UserService
+  GRADLE_PROJECT_NAME: UserService
   JAVA_VERSION: '21'
   GRADLE_VERSION: '8.14.3'      
 
@@ -51,7 +51,7 @@ jobs:
     - name: 1. Build UserService (Skip Tests)
       run: |
         echo "--- [STEP 1: BUILD] Запуск сборки UserService ---"
-        ./gradlew :${{ env.GRADLE_PROJECT_NAME }}:build -x test
+        ./${{env.MODULE_PATH}}/gradlew :${{ env.GRADLE_PROJECT_NAME }}:build -x test
         
     - name: Wait for Database and Redis Services
       run: |
