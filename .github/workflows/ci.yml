@@ -128,35 +128,17 @@ jobs:
   sonarqube-analysis:
     needs: build-and-test
     runs-on: ubuntu-latest
-    # Поднимаем SonarQube как сервис-контейнер, доступный по хосту 'sonarqube'
-    services:
-      sonarqube:
-        image: sonarqube:10-community
-        ports:
-          - 9000:9000
-        options: >-
-          --name sonarqube_server
-          --health-cmd "curl -f http://localhost:9000/api/system/health || exit 1"
-          --health-interval 10s --health-timeout 5s --health-retries 30
-  
     if: github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
   
-      - name: Detect module path (find gradlew)
+      - name: Detect module path for Sonar
         id: detect-sonar
         run: |
-          if [ -x "./gradlew" ] || [ -f "./gradlew" ]; then
-            echo "MODULE_PATH=." >> $GITHUB_ENV
-          else
-            FOUND=$(find . -maxdepth 4 -type f -name gradlew -printf '%h\n' | head -n 1 || true)
-            STRIPPED=${FOUND#./}
-            echo "MODULE_PATH=${STRIPPED:-.}" >> $GITHUB_ENV
-          fi
-          echo "Detected MODULE_PATH = $MODULE_PATH"
+          FOUND=$(find . -maxdepth 4 -name gradlew -type f | head -n1)
+          echo "MODULE_PATH=${FOUND%/*}" >> $GITHUB_ENV
+          echo "Detected MODULE_PATH = ${FOUND%/*}"
   
       - name: Ensure gradlew is executable
         run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
@@ -172,62 +154,15 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
   
-      - name: Wait for SonarQube to be healthy and obtain SONAR_TOKEN
-        # SECRET_SONAR_TOKEN содержит значение секретного токена, если он задан в репозитории.
-        env:
-          SECRET_SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-        run: |
-          set -euo pipefail
-  
-          echo "Waiting for SonarQube HTTP API at http://sonarqube:9000 ..."
-          for i in $(seq 1 60); do
-            status=$(curl -sS http://sonarqube:9000/api/system/health || true)
-            if echo "$status" | grep -qi '"status":"GREEN"'; then
-              echo "SonarQube is healthy."
-              break
-            fi
-            echo "Waiting for SonarQube... ($i/60)"
-            sleep 5
-          done
-  
-          # Если пользователь заранее положил секрет SONAR_TOKEN в репозиторий — используем его.
-          if [ -n "${SECRET_SONAR_TOKEN:-}" ]; then
-            echo "Using SONAR_TOKEN from repository secrets."
-            echo "SONAR_TOKEN=$SECRET_SONAR_TOKEN" >> $GITHUB_ENV
-            exit 0
-          fi
-  
-          echo "No SONAR_TOKEN secret provided — attempting to create a token via SonarQube API (admin:admin)."
-          # Попытка сгенерировать token через API; имя токена уникальное по run id.
-          resp=$(curl -sS -u admin:admin -X POST "http://sonarqube:9000/api/user_tokens/generate" -d "name=gha-token-${GITHUB_RUN_ID}" || true)
-          token=$(echo "$resp" | grep -oP '"token":"\K[^"]+' || true)
-  
-          if [ -n "$token" ]; then
-            echo "Token created successfully."
-            echo "SONAR_TOKEN=$token" >> $GITHUB_ENV
-          else
-            echo "Failed to create token automatically. Response:"
-            echo "$resp"
-            echo
-            echo "If SonarQube requires a different admin password, or token creation is disabled, add a SONAR_TOKEN secret in repository settings."
-            exit 1
-          fi
-  
-      - name: Build and run Sonar analysis against local SonarQube
+      - name: Run SonarCloud Analysis
         working-directory: ${{ env.MODULE_PATH }}
         env:
-          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-        run: |
-          set -euo pipefail
-          echo "Running Gradle build + Sonar analysis against SonarQube at http://sonarqube:9000"
-          ./gradlew build sonar --info \
-            -Dsonar.host.url=http://sonarqube:9000 \
-            -Dsonar.login="$SONAR_TOKEN" \
-            -Dsonar.projectKey="${{ github.repository }}/UserService" \
-            -Dsonar.sources=src/main/java \
-            -Dsonar.tests=src/test/java \
-            -Dsonar.java.binaries=build/classes/java/main
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar \
+              -Dsonar.projectKey="${{ github.repository }}/UserService" \
+              -Dsonar.sources=src/main/java \
+              -Dsonar.tests=src/test/java \
+              -Dsonar.java.binaries=build/classes/java/main
 
 
   docker-build-push:
