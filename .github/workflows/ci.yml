@@ -132,24 +132,13 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
   
-      - name: Detect module path (find gradlew)
+      - name: Detect module path for Sonar
         id: detect-sonar
         run: |
-          if [ -x "./gradlew" ] || [ -f "./gradlew" ]; then
-            echo "MODULE_PATH=." >> $GITHUB_ENV
-          else
-            FOUND=$(find . -maxdepth 4 -type f -name gradlew -printf '%h\n' | head -n 1 || true)
-            if [ -n "$FOUND" ]; then
-              STRIPPED=${FOUND#./}
-              echo "MODULE_PATH=$STRIPPED" >> $GITHUB_ENV
-            else
-              echo "MODULE_PATH=." >> $GITHUB_ENV
-            fi
-          fi
-          echo "Detected MODULE_PATH = $MODULE_PATH"
+          FOUND=$(find . -maxdepth 4 -name gradlew -type f | head -n1)
+          echo "MODULE_PATH=${FOUND%/*}" >> $GITHUB_ENV
+          echo "Detected MODULE_PATH = ${FOUND%/*}"
   
       - name: Ensure gradlew is executable
         run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
@@ -165,28 +154,15 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
   
-      - name: Build module (prepare for Sonar analysis)
-        working-directory: ${{ env.MODULE_PATH }}
-        run: ./gradlew build -x test
-  
-      - name: "Sanity - print Sonar token"
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          echo "SONAR_TOKEN is set? -> ${SONAR_TOKEN:+yes}"
-  
       - name: Run SonarCloud Analysis
         working-directory: ${{ env.MODULE_PATH }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          ./gradlew sonar \
-            -Dsonar.login="$SONAR_TOKEN" \
-            -Dsonar.projectKey="${{ github.repository }}/UserService" \
-            -Dsonar.sources=src/main/java \
-            -Dsonar.tests=src/test/java \
-            -Dsonar.java.binaries=build/classes/java/main \
-            -Dsonar.gradle.skipCompile=true
+        run: ./gradlew sonar \
+              -Dsonar.projectKey="${{ github.repository }}/UserService" \
+              -Dsonar.sources=src/main/java \
+              -Dsonar.tests=src/test/java \
+              -Dsonar.java.binaries=build/classes/java/main
 
 
   docker-build-push:
