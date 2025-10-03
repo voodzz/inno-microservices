@@ -142,12 +142,8 @@ jobs:
             echo "MODULE_PATH=." >> $GITHUB_ENV
           else
             FOUND=$(find . -maxdepth 4 -type f -name gradlew -printf '%h\n' | head -n 1 || true)
-            if [ -n "$FOUND" ]; then
-              STRIPPED=${FOUND#./}
-              echo "MODULE_PATH=$STRIPPED" >> $GITHUB_ENV
-            else
-              echo "MODULE_PATH=." >> $GITHUB_ENV
-            fi
+            STRIPPED=${FOUND#./}
+            echo "MODULE_PATH=${STRIPPED:-.}" >> $GITHUB_ENV
           fi
           echo "Detected MODULE_PATH = $MODULE_PATH"
   
@@ -165,28 +161,16 @@ jobs:
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
   
-      - name: Build module (prepare for Sonar analysis)
-        working-directory: ${{ env.MODULE_PATH }}
-        run: ./gradlew build -x test
-  
-      - name: "Sanity - print Sonar token"
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          echo "SONAR_TOKEN is set? -> ${SONAR_TOKEN:+yes}"
-  
-      - name: Run SonarCloud Analysis
+      - name: Build and run SonarCloud analysis
         working-directory: ${{ env.MODULE_PATH }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew sonar \
-            -Dsonar.login="$SONAR_TOKEN" \
+          ./gradlew build sonar --info \
             -Dsonar.projectKey="${{ github.repository }}/UserService" \
             -Dsonar.sources=src/main/java \
             -Dsonar.tests=src/test/java \
-            -Dsonar.java.binaries=build/classes/java/main \
-            -Dsonar.gradle.skipCompile=true
+            -Dsonar.java.binaries=build/classes/java/main
 
 
   docker-build-push:
