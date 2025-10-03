@@ -48,6 +48,9 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
+    - name: Ensure gradlew is executable
+      run: chmod +x ./${{env.MODULE_PATH}}/gradlew
+
     - name: 1. Build UserService (Skip Tests)
       run: |
         echo "--- [STEP 1: BUILD] Запуск сборки UserService ---"
