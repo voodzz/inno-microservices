@@ -153,6 +153,35 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Show workspace (for debugging)
+      run: |
+        echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+        ls -la .
+        echo "=== find first-level dirs ==="
+        find . -maxdepth 2 -type d -print
+
+    - name: Detect module path (find gradlew)
+      id: detect-sonar
+      run: |
+        if [ -x "./gradlew" ] || [ -f "./gradlew" ]; then
+          echo "Found gradlew at repo root"
+          echo "MODULE_PATH=." >> $GITHUB_ENV
+        else
+          FOUND=$(find . -maxdepth 4 -type f -name gradlew -printf '%h\n' | head -n 1 || true)
+          if [ -n "$FOUND" ]; then
+            STRIPPED=${FOUND#./}
+            echo "Found gradlew in: $STRIPPED"
+            echo "MODULE_PATH=$STRIPPED" >> $GITHUB_ENV
+          else
+            echo "No gradlew found; falling back to '.'"
+            echo "MODULE_PATH=." >> $GITHUB_ENV
+          fi
+        fi
+        echo "Detected MODULE_PATH = $MODULE_PATH (env will be available to next steps)"
+
+    - name: Ensure gradlew is executable (sonar)
+      run: chmod +x "${{ env.MODULE_PATH }}/gradlew"
+
     - name: Setup Java ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
