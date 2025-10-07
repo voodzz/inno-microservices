@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +24,7 @@ public class JwtService {
   @Value("${security.jwt.access-expiration-time}")
   private Long accessTokenExpiration;
 
+  @Getter
   @Value("${security.jwt.refresh-expiration-time}")
   private Long refreshTokenExpiration;
 
