@@ -53,10 +53,7 @@ public class User implements UserDetails {
     if (roles == null) {
       return Set.of();
     }
-    return roles.stream()
-        .map(Role::getRole)
-        .map(SimpleGrantedAuthority::new)
-        .collect(Collectors.toSet());
+    return roles;
   }
 
   @Override

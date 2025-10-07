@@ -14,13 +14,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "roles")
-public class Role {
+public class Role implements GrantedAuthority {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -33,4 +34,9 @@ public class Role {
   @ToString.Exclude
   @EqualsAndHashCode.Exclude
   private User user;
+
+  @Override
+  public String getAuthority() {
+    return role;
+  }
 }
