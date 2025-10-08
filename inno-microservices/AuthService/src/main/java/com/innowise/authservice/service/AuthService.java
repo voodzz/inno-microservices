@@ -1,6 +1,7 @@
 package com.innowise.authservice.service;
 
 import com.innowise.authservice.exception.AlreadyExistsException;
+import com.innowise.authservice.model.RoleEnum;
 import com.innowise.authservice.model.dto.AuthRequest;
 import com.innowise.authservice.model.dto.AuthResponse;
 import com.innowise.authservice.model.entity.RefreshToken;
@@ -33,7 +34,7 @@ public class AuthService {
     User user =
         new User(
             null, request.username(), passwordEncoder.encode(request.password()), new HashSet<>());
-    user.getRoles().add(new Role(null, "USER", user));
+    user.getRoles().add(new Role(null, RoleEnum.USER, user));
 
     return userRepository.save(user);
   }
