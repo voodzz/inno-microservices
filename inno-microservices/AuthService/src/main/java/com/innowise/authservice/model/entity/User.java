@@ -10,19 +10,29 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serial;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+/**
+ * Entity representing an application user.
+ *
+ * <p>This entity is mapped to the {@code users} table and stores authentication details such as
+ * username, password, and assigned {@link Role roles}. It implements
+ * {@link org.springframework.security.core.userdetails.UserDetails} to integrate with Spring Security’s
+ * authentication framework.
+ *
+ * <p>Each user can have multiple roles, defined via a one-to-many relationship. Roles are eagerly
+ * fetched and cascaded on persistence operations.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -46,6 +56,8 @@ public class User implements UserDetails {
       cascade = CascadeType.ALL,
       fetch = FetchType.EAGER,
       orphanRemoval = true)
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
   private Set<Role> roles = new HashSet<>();
 
   @Override

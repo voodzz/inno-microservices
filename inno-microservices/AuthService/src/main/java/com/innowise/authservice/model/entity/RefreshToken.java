@@ -11,10 +11,17 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.Instant;
 
+/**
+ * Entity representing a refresh token stored in the {@code refresh_tokens} table.
+ *
+ * <p>Holds a unique token string, the owning {@link User}, and an expiration {@link Instant}.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,6 +36,8 @@ public class RefreshToken {
   private String token;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 

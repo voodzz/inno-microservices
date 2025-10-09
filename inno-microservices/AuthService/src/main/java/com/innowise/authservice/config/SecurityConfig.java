@@ -17,6 +17,29 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Spring Security configuration class that declares security-related beans and configures the HTTP
+ * security filter chain for the application.
+ *
+ * <p>Configuration highlights:
+ *
+ * <ul>
+ *   <li>Provides a {@link PasswordEncoder} bean using BCrypt.
+ *   <li>Registers an {@link AuthenticationProvider} backed by the application's {@link UserService}.
+ *   <li>Exposes an {@link AuthenticationManager} obtained from {@link AuthenticationConfiguration}.
+ *   <li>Builds a {@link SecurityFilterChain} that disables CSRF, permits unauthenticated access to
+ *       {@code /api/v1/auth/**}, enforces stateless session management, registers the custom
+ *       authentication provider, and inserts a JWT authentication filter into the chain.
+ * </ul>
+ *
+ * <p>Dependencies are injected via constructor (Lombok's {@code @RequiredArgsConstructor}).
+ *
+ * @see PasswordEncoder
+ * @see BCryptPasswordEncoder
+ * @see DaoAuthenticationProvider
+ * @see AuthenticationManager
+ * @see SecurityFilterChain
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

@@ -15,6 +15,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller that exposes authentication-related endpoints under {@code /api/v1/auth}.
+ *
+ * <p>Exposes endpoints to register a new user, login a user, and refresh an
+ * authentication token. Request payloads are validated using {@code @Valid} and the controller
+ * delegates actual business logic to {@link AuthService} and token operations to {@link JwtService}.
+ *
+ * <p>Dependencies are injected via constructor (Lombok's {@code @RequiredArgsConstructor}).
+ *
+ * @see AuthService
+ * @see JwtService
+ */
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -36,7 +48,7 @@ public class AuthController {
 
   @PostMapping("/refresh")
   public ResponseEntity<AuthResponse> refresh(@RequestBody @Valid RefreshTokenRequest request) {
-      AuthResponse refresh = authService.refresh(request.refreshToken());
-      return ResponseEntity.ok(refresh);
+    AuthResponse refresh = authService.refresh(request.refreshToken());
+    return ResponseEntity.ok(refresh);
   }
 }

@@ -9,6 +9,22 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global exception handler that centralizes exception-to-HTTP-response mapping for controllers.
+ *
+ * <p>Annotated with {@code @RestControllerAdvice} so that the return values of handler methods are
+ * written directly to the HTTP response body (as JSON for complex types like {@link Map}).
+ *
+ * <p>Handler methods in this class translate common exceptions into appropriate HTTP status codes:
+ *
+ * <ul>
+ *   <li>{@link Exception} &rarr; 500 Internal Server Error
+ *   <li>{@link MethodArgumentNotValidException} &rarr; 400 Bad Request (field -> message map)
+ *   <li>{@link AlreadyExistsException} &rarr; 409 Conflict
+ *   <li>{@link TokenExpiredException} &rarr; 403 Forbidden
+ *   <li>{@link NotFoundException} &rarr; 404 Not Found
+ * </ul>
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
@@ -37,7 +53,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
-      return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+  public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
+    return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
   }
 }

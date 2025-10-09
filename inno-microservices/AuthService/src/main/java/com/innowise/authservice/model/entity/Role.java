@@ -19,6 +19,15 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 
+/**
+ * Entity representing a user's role in the system.
+ *
+ * <p>This entity is mapped to the {@code roles} table and defines the association between a {@link User}
+ * and a specific {@link RoleEnum} value, such as {@code ADMIN} or {@code USER}.
+ *
+ * <p>Implements {@link org.springframework.security.core.GrantedAuthority} to integrate with Spring
+ * Security's authorization mechanisms.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
