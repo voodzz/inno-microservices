@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,6 +40,7 @@ public class UserController {
    *     (Created)
    */
   @PostMapping
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto request) {
     UserDto response = service.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -51,6 +53,7 @@ public class UserController {
    * @return a {@link ResponseEntity} containing the {@link UserDto} and HTTP status 200 (OK)
    */
   @GetMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
   public ResponseEntity<UserDto> findById(@PathVariable Long id) {
     UserDto response = service.findById(id);
     return ResponseEntity.ok(response);
@@ -74,6 +77,7 @@ public class UserController {
    *     (OK), or 204 (No Content) if no users are found
    */
   @GetMapping
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<UserDto>> findBy(
       @RequestParam(required = false) String filter,
       @RequestParam(required = false) List<Long> ids,
@@ -120,6 +124,7 @@ public class UserController {
    * @return a {@link ResponseEntity} with HTTP status 200 (OK) if updated successfully
    */
   @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
   public ResponseEntity<Void> updateUser(
       @PathVariable Long id, @Valid @RequestBody UserDto request) {
     service.update(id, request);
@@ -133,6 +138,7 @@ public class UserController {
    * @return a {@link ResponseEntity} with HTTP status 204 (No Content) if deleted successfully
    */
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
   public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
     service.delete(id);
     return ResponseEntity.noContent().build();
