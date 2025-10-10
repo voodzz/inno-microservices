@@ -19,11 +19,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 
+import java.io.Serial;
+
 /**
  * Entity representing a user's role in the system.
  *
  * <p>This entity is mapped to the {@code roles} table and defines the association between a {@link User}
- * and a specific {@link RoleEnum} value, such as {@code ADMIN} or {@code USER}.
+ * and a specific {@link RoleEnum} value, such as {@code ROLE_ADMIN} or {@code ROLE_USER}.
  *
  * <p>Implements {@link org.springframework.security.core.GrantedAuthority} to integrate with Spring
  * Security's authorization mechanisms.
@@ -34,6 +36,8 @@ import org.springframework.security.core.GrantedAuthority;
 @Entity
 @Table(name = "roles")
 public class Role implements GrantedAuthority {
+  @Serial private static final long serialVersionUID = -3242589910858464110L;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

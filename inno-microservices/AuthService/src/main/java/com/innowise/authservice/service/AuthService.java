@@ -46,7 +46,7 @@ public class AuthService {
     User user =
         new User(
             null, request.username(), passwordEncoder.encode(request.password()), new HashSet<>());
-    user.getRoles().add(new Role(null, RoleEnum.USER, user));
+    user.getRoles().add(new Role(null, RoleEnum.ROLE_USER, user));
 
     return userRepository.save(user);
   }
