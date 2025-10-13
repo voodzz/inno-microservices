@@ -32,6 +32,22 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
 
+  orderservice:
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    container_name: orderservice-app
+    ports:
+      - "8082:8080"
+    depends_on:
+      - orderservice-postgres
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://orderservice-postgres:5432/${DB_ORDER_SERVICE}"
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
   redis:
     image: redis/redis-stack:latest
     ports:
@@ -59,14 +75,30 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${DB_AUTH_SERVICE:-authservice}
-      POSTGRES_USER: ${AUTH_DB_USER:-myuser}
-      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_AUTH_SERVICE}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5435:5432"
     volumes:
       - authservice_db_data:/var/lib/postgresql/data
 
+  orderservice-postgres:
+    image: postgres:latest
+    container_name: orderservice-db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_ORDER_SERVICE}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5437:5432"
+    volumes:
+      - orderservice_db_data:/var/lib/postgresql/data
+
 volumes:
   userservice_db_data:
   authservice_db_data:
+  orderservice_db_data:
