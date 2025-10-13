@@ -3,37 +3,70 @@ services:
     build:
       context: ./UserService
       dockerfile: Dockerfile
-    container_name: 'userservice-app'
+    container_name: userservice-app
     ports:
-      - '8080:8080'
+      - "8080:8080"
     depends_on:
-      - postgres
+      - userservice-postgres
+      - redis
     env_file:
       - .env
     environment:
-     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
-     SPRING_DATASOURCE_USERNAME: ${DB_USER}
-     SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://userservice-postgres:5432/${DB_USER_SERVICE}"
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+  authservice:
+    build:
+      context: ./AuthService
+      dockerfile: Dockerfile
+    container_name: authservice-app
+    ports:
+      - "8081:8080"
+    depends_on:
+      - authservice-postgres
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://authservice-postgres:5432/${DB_AUTH_SERVICE}"
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
 
   redis:
-    image: 'redis/redis-stack:latest'
+    image: redis/redis-stack:latest
     ports:
-      - '6379:6379'
+      - "6379:6379"
 
-  postgres:
-    image: 'postgres:latest'
-    container_name: 'userservice-db'
-    restart: 'always'
+  userservice-postgres:
+    image: postgres:latest
+    container_name: userservice-db
+    restart: always
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: ${DB_USER_SERVICE}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - '5433:5432'
+      - "5433:5432"
     volumes:
-      - 'db_data:/var/lib/postgresql/data'
+      - userservice_db_data:/var/lib/postgresql/data
+
+  authservice-postgres:
+    image: postgres:latest
+    container_name: authservice-db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_AUTH_SERVICE:-authservice}
+      POSTGRES_USER: ${AUTH_DB_USER:-myuser}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:-secret}
+    ports:
+      - "5435:5432"
+    volumes:
+      - authservice_db_data:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+  userservice_db_data:
+  authservice_db_data:
