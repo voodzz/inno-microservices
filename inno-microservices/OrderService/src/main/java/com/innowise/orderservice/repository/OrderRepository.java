@@ -47,7 +47,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
    * @return a page of orders matching the provided IDs
    */
   @Query("SELECT o FROM Order o WHERE o.id IN :ids")
-  Page<Order> findOrdersByIdIn(Collection<Long> ids, Pageable pageable);
+  Page<Order> findOrdersByIdIn(@Param("ids") Collection<Long> ids, Pageable pageable);
 
   /**
    * Retrieves all orders which statuses are in the given collection
@@ -57,7 +57,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
    * @return a page of orders with statuses matching the provided
    */
   @Query("SELECT o FROM Order o WHERE o.status IN :statuses")
-  Page<Order> findOrdersByStatusIn(Collection<StatusEnum> statuses, Pageable pageable);
+  Page<Order> findOrdersByStatusIn(
+      @Param("statuses") Collection<StatusEnum> statuses, Pageable pageable);
 
   /**
    * Retrieves all orders

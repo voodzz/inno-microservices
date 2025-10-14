@@ -40,7 +40,7 @@ public class Item {
   @Column(nullable = false)
   private String name;
 
-  @Column(precision = 10, scale = 2)
+  @Column(precision = 10, scale = 2, nullable = false)
   private BigDecimal price;
 
   @OneToMany(mappedBy = "item")

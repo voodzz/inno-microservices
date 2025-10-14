@@ -1,7 +1,6 @@
 package com.innowise.orderservice.mapper;
 
 import com.innowise.orderservice.model.dto.ItemDto;
-import com.innowise.orderservice.model.dto.OrderDto;
 import com.innowise.orderservice.model.entity.Item;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
@@ -20,7 +19,7 @@ public interface ItemMapper {
   /**
    * Converts a {@link ItemDto} to a {@link Item} entity
    *
-   * @param dto the order DTO containing data
+   * @param dto the item DTO containing data
    * @return the corresponding {@link Item} entity
    */
   Item toEntity(ItemDto dto);
@@ -28,15 +27,15 @@ public interface ItemMapper {
   /**
    * Converts a {@link Item} entity to a {@link ItemDto}
    *
-   * @param item the order entity to convert
-   * @return the corresponding {@link OrderDto}
+   * @param item the item entity to convert
+   * @return the corresponding {@link ItemDto}
    */
   ItemDto toDto(Item item);
 
   /**
    * Converts a list of {@link Item} entities to a list of {@link ItemDto} objects
    *
-   * @param items the list of order entities to convert
+   * @param items the list of item entities to convert
    * @return a list of corresponding {@link ItemDto} objects
    */
   List<ItemDto> toDtoList(List<Item> items);
@@ -44,7 +43,7 @@ public interface ItemMapper {
   /**
    * Converts a list of {@link ItemDto} objects to a list of {@link Item} entities
    *
-   * @param dtoList the list of order DTOs to convert
+   * @param dtoList the list of item DTOs to convert
    * @return a list of corresponding {@link Item} entities
    */
   List<Item> toEntityList(List<ItemDto> dtoList);

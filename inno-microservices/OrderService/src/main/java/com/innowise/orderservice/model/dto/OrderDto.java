@@ -14,7 +14,7 @@ import java.time.LocalDate;
  *
  * @param id the unique identifier of the order
  * @param userId the ID of the user who placed the order
- * @param status the ID of the user who placed the order
+ * @param status the current status of the order
  * @param creationDate the date when the order was created
  */
 public record OrderDto(
