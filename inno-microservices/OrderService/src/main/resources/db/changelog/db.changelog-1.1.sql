@@ -11,3 +11,6 @@ CREATE INDEX IF NOT EXISTS order_items_order_id_idx ON order_items (order_id);
 
 --chageset voodzz:4
 CREATE INDEX IF NOT EXISTS order_items_item_id_idx ON order_items (item_id);
+
+--changeset voodzz:5
+CREATE INDEX IF NOT EXISTS orders_status_idx ON orders (status);
