@@ -8,10 +8,11 @@ import java.util.Collection;
 /**
  * Generic CRUD (Create, Read, Update, Delete) service interface for managing entities.
  *
- * @param <T> the type of the Data Transfer Object (DTO) representing the entity
+ * @param <IN> the type of the Data Transfer Object (DTO) representing for input
+ * @param <OUT> the type of the Data Transfer Object (DTO) representing for output
  * @param <ID> the type of the unique identifier of the entity
  */
-public interface CrudService<T, ID> {
+public interface CrudService<IN, OUT, ID> {
 
   /**
    * Creates a new entity.
@@ -19,7 +20,7 @@ public interface CrudService<T, ID> {
    * @param dto the DTO representing the entity to create
    * @return the created entity DTO
    */
-  T create(T dto);
+  OUT create(IN dto);
 
   /**
    * Finds an entity by its unique identifier.
@@ -27,7 +28,7 @@ public interface CrudService<T, ID> {
    * @param id the identifier of the entity
    * @return the entity DTO if found, or {@code null} if not found
    */
-  T findById(ID id);
+  OUT findById(ID id);
 
   /**
    * Finds multiple entities by their unique ID
@@ -36,7 +37,7 @@ public interface CrudService<T, ID> {
    * @param pageable the pagination information
    * @return a page of orders matching the provided IDs
    */
-  Page<T> findByIds(Collection<ID> ids, Pageable pageable);
+  Page<OUT> findByIds(Collection<ID> ids, Pageable pageable);
 
   /**
    * Retrieves all entities
@@ -44,7 +45,7 @@ public interface CrudService<T, ID> {
    * @param pageable the pagination information
    * @return a page of all the entities
    */
-  Page<T> findAll(Pageable pageable);
+  Page<OUT> findAll(Pageable pageable);
 
   /**
    * Updates the existing entity
@@ -52,7 +53,7 @@ public interface CrudService<T, ID> {
    * @param id the identifier of the entity to update
    * @param dto the DTO containing updated entity data
    */
-  void updateById(ID id, T dto);
+  OUT updateById(ID id, IN dto);
 
   /**
    * Deletes an entity by its identifier.
