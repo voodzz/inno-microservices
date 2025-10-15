@@ -1,6 +1,6 @@
 package com.innowise.orderservice.model.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.innowise.orderservice.model.StatusEnum;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 
@@ -20,5 +20,5 @@ import java.time.LocalDate;
 public record OrderDto(
     Long id,
     @NotNull(message = "userId must not be null") Long userId,
-    @NotBlank(message = "status must not be blank") String status,
+    @NotNull(message = "order must have a status") StatusEnum status,
     @Past(message = "creationDate must be in the past") LocalDate creationDate) {}
