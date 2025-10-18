@@ -16,6 +16,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,21 +29,6 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   private final OrderMapper orderMapper;
   private final UserServiceClient userServiceClient;
 
-  private OrderUserDto combineWithUser(OrderDto orderDto) {
-    try {
-      UserDto userDto;
-      userDto = userServiceClient.getUserByEmail(orderDto.userEmail());
-      return new OrderUserDto(orderDto, userDto);
-    } catch (FeignException.NotFound notFound) {
-        throw new RetrieveUserException("User with email '%s' not found".formatted(orderDto.userEmail()));
-    } catch (FeignException e) {
-        throw new RetrieveUserException("Communication error with User Service: " + e.getMessage(), e);
-    } catch (Exception e) {
-        throw new RetrieveUserException("An unexpected error occurred while retrieving user: " + e.getMessage(), e);
-    }
-  }
-
-  @Transactional(readOnly = true)
   @Override
   public OrderUserDto create(OrderDto dto) {
     Order entity = orderMapper.toEntity(dto);
@@ -59,25 +45,16 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
 
   @Transactional(readOnly = true)
   @Override
-  public Page<OrderUserDto> findByIds(Collection<Long> ids, Pageable pageable) {
-    return orderRepository
-        .findOrdersByIdIn(ids, pageable)
-        .map(orderMapper::toDto)
-        .map(this::combineWithUser);
-  }
-
-  @Transactional(readOnly = true)
-  public Page<OrderUserDto> findByStatuses(Collection<StatusEnum> statuses, Pageable pageable) {
-    return orderRepository
-        .findOrdersByStatusIn(statuses, pageable)
-        .map(orderMapper::toDto)
-        .map(this::combineWithUser);
-  }
-
-  @Transactional(readOnly = true)
-  @Override
   public Page<OrderUserDto> findAll(Pageable pageable) {
-    return orderRepository.findAll(pageable).map(orderMapper::toDto).map(this::combineWithUser);
+    return findBySpecification(Specification.unrestricted(), pageable);
+  }
+
+  public Page<OrderUserDto> findBySpecification(
+      Specification<Order> specification, Pageable pageable) {
+    return orderRepository
+        .findAll(specification, pageable)
+        .map(orderMapper::toDto)
+        .map(this::combineWithUser);
   }
 
   @Transactional
@@ -101,5 +78,22 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   public void deleteById(Long id) {
     orderRepository.findOrderById(id).orElseThrow(() -> new NotFoundException(id));
     orderRepository.deleteById(id);
+  }
+
+  private OrderUserDto combineWithUser(OrderDto orderDto) {
+    try {
+      UserDto userDto;
+      userDto = userServiceClient.getUserByEmail(orderDto.userEmail());
+      return new OrderUserDto(orderDto, userDto);
+    } catch (FeignException.NotFound notFound) {
+      throw new RetrieveUserException(
+          "User with email '%s' not found".formatted(orderDto.userEmail()));
+    } catch (FeignException e) {
+      throw new RetrieveUserException(
+          "Communication error with User Service: " + e.getMessage(), e);
+    } catch (Exception e) {
+      throw new RetrieveUserException(
+          "An unexpected error occurred while retrieving user: " + e.getMessage(), e);
+    }
   }
 }

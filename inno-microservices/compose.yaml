@@ -15,6 +15,8 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://userservice-postgres:5432/${DB_USER_SERVICE}"
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
 
   authservice:
     build:

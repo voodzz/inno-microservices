@@ -31,15 +31,6 @@ public interface CrudService<IN, OUT, ID> {
   OUT findById(ID id);
 
   /**
-   * Finds multiple entities by their unique ID
-   *
-   * @param ids the collection of entity identifiers
-   * @param pageable the pagination information
-   * @return a page of orders matching the provided IDs
-   */
-  Page<OUT> findByIds(Collection<ID> ids, Pageable pageable);
-
-  /**
    * Retrieves all entities
    *
    * @param pageable the pagination information
