@@ -1,5 +1,8 @@
-package com.innowise.orderservice.exception;
+package com.innowise.orderservice.unit.exception;
 
+import com.innowise.orderservice.exception.NotFoundException;
+import com.innowise.orderservice.exception.RetrieveUserException;
+import com.innowise.orderservice.exception.UpdateException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 

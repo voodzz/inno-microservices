@@ -1,5 +1,6 @@
-package com.innowise.orderservice.mapper;
+package com.innowise.orderservice.unit.mapper;
 
+import com.innowise.orderservice.mapper.OrderMapper;
 import com.innowise.orderservice.model.StatusEnum;
 import com.innowise.orderservice.model.dto.OrderDto;
 import com.innowise.orderservice.model.entity.Order;
