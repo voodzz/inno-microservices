@@ -85,7 +85,7 @@ jobs:
           SONAR_ORG: voodzz
           SONAR_HOST_URL: https://sonarcloud.io
         run: >
-          ./gradlew sonarqube
+          ./gradlew clean build sonar
           -Dsonar.projectKey=$SONAR_PROJECT_KEY
           -Dsonar.organization=$SONAR_ORG
           -Dsonar.host.url=$SONAR_HOST_URL
