@@ -24,6 +24,8 @@ jobs:
           java-version: "21"
           distribution: temurin
           cache: gradle
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew clean assemble
 
@@ -39,6 +41,8 @@ jobs:
           java-version: "21"
           distribution: temurin
           cache: gradle
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       - name: Run tests with coverage
         run: ./gradlew test jacocoTestReport
       - name: Upload test results
@@ -66,6 +70,8 @@ jobs:
           java-version: "21"
           distribution: temurin
           cache: gradle
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       - name: SonarCloud scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
