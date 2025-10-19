@@ -1,0 +1,117 @@
+name: OrderService CI
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    branches:
+      - main:
+
+defaults:
+  runs-on:
+    working-directory: inno-microservices/OrderService
+
+jobs:
+  build:
+    name: Building
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Java 21
+	uses: actions/setup-java@v4
+	with: 
+   	  java-version: '21'
+	  distribution: 'temurin'
+	  cache: 'gradle'
+      
+      - name: Build with Gradle
+	run: ./gradlew clean assemble
+  test:
+    name: Testing
+    runs-on: ubuntu-latest
+    needs: build    
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 21
+	uses: actions/setup-java@v4
+	with:
+	  java-version: '21'
+	  distribution: 'temurin'
+	  cache: 'gradle'
+
+      - name: Run tests with coverage
+        run: ./gradlew test jacocoTestReport
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/reports/tests/test
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/reports/jacoco/test/html
+
+  sonarqube:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    needs: test
+	
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 21
+	uses: actions/setup-java@v4
+	with:
+	  java-version: '21'
+	  distribution: 'temurin'
+	  cache: 'gradle'
+
+      - name: SonarCloud scan
+	env:
+	  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+	  SONAR_PROJECT_KEY: voodzz_inno-microservices
+  	  SONAR_ORG: voodzz
+  	  SONAR_HOST_URL: https://sonarcloud.io 
+	run: |
+          ./gradlew sonarqube \
+            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+            -Dsonar.organization=$SONAR_ORG \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.login=$SONAR_TOKEN \
+            -Dsonar.java.binaries=build/classes \
+            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+
+  docker:
+    name: Artifact Creation (Docker Image)
+    runs-on: ubuntu-latest
+    needs: sonarqube
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+	uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+	uses: docker/login-action@v3
+	with:
+	  username: ${{ secrets.DOCKER_USERNAME }}
+	  password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker iamge
+	uses: docker/build-push-action@v6
+	with:
+	  context: .
+	  file: inno-microservices/OrderService/Dockerfile
+	  push: true
+	  tags: ${{ secrets.DOCKERHUB_USERNAME }}/orderservice:latest
