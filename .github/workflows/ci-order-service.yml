@@ -14,7 +14,7 @@ defaults:
 
 jobs:
   build:
-    name: Build & Test
+    name: Building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,26 +28,11 @@ jobs:
           cache: gradle
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      - name: Build & run tests with coverage
-        run: ./gradlew clean test jacocoTestReport assemble
-      - name: Upload compiled classes
-        uses: actions/upload-artifact@v4
-        with:
-          name: classes
-          path: build/classes/java/main
-      - name: Upload Jacoco report
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: build/reports/jacoco/test/jacocoTestReport.xml
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: orderservice-jar
-          path: build/libs/OrderService-0.0.1-SNAPSHOT.jar
+      - name: Build with Gradle
+        run: ./gradlew clean assemble
 
-  sonarqube:
-    name: SonarCloud Analysis
+  test:
+    name: Testing
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -62,40 +47,59 @@ jobs:
           cache: gradle
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      - name: Download compiled classes
-        uses: actions/download-artifact@v4
+      - name: Run tests with coverage
+        run: ./gradlew test jacocoTestReport
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: classes
-          path: build/classes/java/main
-      - name: Download Jacoco report
-        uses: actions/download-artifact@v4
+          name: test-results
+          path: build/reports/tests/test
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: jacoco-report
-          path: build/reports/jacoco/test
+          name: coverage-report
+          path: build/reports/jacoco/test/html
+
+  sonarqube:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: gradle
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Run tests and generate Jacoco report
+        run: ./gradlew clean test jacocoTestReport
       - name: SonarCloud scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: voodzz_inno-microservices
           SONAR_ORG: voodzz
           SONAR_HOST_URL: https://sonarcloud.io
-        run: ./gradlew sonar \
-              -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-              -Dsonar.organization=$SONAR_ORG \
-              -Dsonar.host.url=$SONAR_HOST_URL \
-              -Dsonar.java.binaries=build/classes/java/main \
-              -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+        run: >
+          ./gradlew clean build sonar
+          -Dsonar.projectKey=$SONAR_PROJECT_KEY
+          -Dsonar.organization=$SONAR_ORG
+          -Dsonar.host.url=$SONAR_HOST_URL
+          -Dsonar.java.binaries=build/classes/java/main
+          -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
 
   docker:
-    name: Build & Push Docker Image
+    name: Artifact Creation (Docker Image)
     runs-on: ubuntu-latest
-    needs: build
+    needs: sonarqube
     steps:
       - uses: actions/checkout@v4
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: orderservice-jar
-          path: build/libs
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to Docker Hub
@@ -109,4 +113,4 @@ jobs:
           context: .
           file: inno-microservices/OrderService/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/orderservice:latest
+          tags: orderservice:latest
