@@ -47,20 +47,8 @@ jobs:
           cache: gradle
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      - name: Run tests with coverage
-        run: ./gradlew test jacocoTestReport
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: build/reports/tests/test
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: build/reports/jacoco/test/html
+      - name: Run tests
+        run: ./gradlew test
 
   sonarqube:
     name: Code Analysis
