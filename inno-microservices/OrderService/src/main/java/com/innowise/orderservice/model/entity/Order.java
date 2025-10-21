@@ -51,6 +51,8 @@ public class Order {
   @Column(nullable = false)
   private LocalDate creationDate;
 
+  private String userEmail;
+
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> orderItems = new ArrayList<>();
 }

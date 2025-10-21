@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class OrderMapperTest {
+public class OrderMapperTest {
 
   private final OrderMapper mapper = Mappers.getMapper(OrderMapper.class);
 

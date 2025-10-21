@@ -5,13 +5,13 @@ import com.innowise.orderservice.exception.NotFoundException;
 import com.innowise.orderservice.exception.RetrieveUserException;
 import com.innowise.orderservice.exception.UpdateException;
 import com.innowise.orderservice.mapper.OrderMapper;
-import com.innowise.orderservice.model.StatusEnum;
 import com.innowise.orderservice.model.dto.OrderDto;
 import com.innowise.orderservice.model.dto.OrderUserDto;
 import com.innowise.orderservice.model.dto.UserDto;
 import com.innowise.orderservice.model.entity.Order;
 import com.innowise.orderservice.repository.OrderRepository;
 import com.innowise.orderservice.service.CrudService;
+import com.innowise.orderservice.util.OrderSpecifications;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,8 +20,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-
 @Service
 @RequiredArgsConstructor
 public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
@@ -29,10 +27,15 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   private final OrderMapper orderMapper;
   private final UserServiceClient userServiceClient;
 
+  @Transactional
   @Override
   public OrderUserDto create(OrderDto dto) {
+    combineWithUser(dto);
+
     Order entity = orderMapper.toEntity(dto);
-    return combineWithUser(orderMapper.toDto(orderRepository.save(entity)));
+    Order saved = orderRepository.save(entity);
+    OrderDto savedDto = orderMapper.toDto(saved);
+    return combineWithUser(savedDto);
   }
 
   @Transactional(readOnly = true)
@@ -46,7 +49,7 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   @Transactional(readOnly = true)
   @Override
   public Page<OrderUserDto> findAll(Pageable pageable) {
-    return findBySpecification(Specification.unrestricted(), pageable);
+    return findBySpecification(OrderSpecifications.all(), pageable);
   }
 
   public Page<OrderUserDto> findBySpecification(
@@ -68,9 +71,10 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
       throw new UpdateException(id);
     }
 
-    return combineWithUser(
+    OrderDto updatedDto =
         orderMapper.toDto(
-            orderRepository.findOrderById(id).orElseThrow(() -> new NotFoundException(id))));
+            orderRepository.findOrderById(id).orElseThrow(() -> new NotFoundException(id)));
+    return combineWithUser(updatedDto);
   }
 
   @Transactional

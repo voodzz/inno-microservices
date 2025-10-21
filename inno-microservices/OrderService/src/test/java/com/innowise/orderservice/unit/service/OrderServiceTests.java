@@ -12,6 +12,7 @@ import com.innowise.orderservice.model.dto.UserDto;
 import com.innowise.orderservice.model.entity.Order;
 import com.innowise.orderservice.repository.OrderRepository;
 import com.innowise.orderservice.service.impl.OrderService;
+import com.innowise.orderservice.util.OrderSpecifications;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceTests {
@@ -222,7 +230,7 @@ public class OrderServiceTests {
   @Test
   void findBySpecification_ShouldReturnPagedOrderUserDto() {
     Pageable pageable = PageRequest.of(0, 10);
-    Specification<Order> dummySpec = Specification.unrestricted();
+    Specification<Order> dummySpec = OrderSpecifications.all();
     Page<Order> mockPage = new PageImpl<>(List.of(mockOrderEntity), pageable, 1);
 
     when(orderRepository.findAll(eq(dummySpec), eq(pageable))).thenReturn(mockPage);
@@ -240,16 +248,12 @@ public class OrderServiceTests {
     OrderDto newDto =
         new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
 
-    when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
-    when(orderRepository.save(mockOrderEntity)).thenReturn(mockOrderEntity);
-    when(orderMapper.toDto(mockOrderEntity)).thenReturn(mockOrderDto);
     when(userServiceClient.getUserByEmail(newDto.userEmail()))
         .thenThrow(mock(FeignException.NotFound.class));
 
-    assertThatThrownBy(() -> orderService.create(newDto))
-        .isInstanceOf(RetrieveUserException.class);
+    assertThatThrownBy(() -> orderService.create(newDto)).isInstanceOf(RetrieveUserException.class);
 
-    verify(orderRepository).save(mockOrderEntity);
+    verifyNoInteractions(orderRepository);
   }
 
   @Test
@@ -257,16 +261,12 @@ public class OrderServiceTests {
     OrderDto newDto =
         new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
 
-    when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
-    when(orderRepository.save(mockOrderEntity)).thenReturn(mockOrderEntity);
-    when(orderMapper.toDto(mockOrderEntity)).thenReturn(mockOrderDto);
     when(userServiceClient.getUserByEmail(newDto.userEmail()))
         .thenThrow(mock(FeignException.class));
 
-    assertThatThrownBy(() -> orderService.create(newDto))
-        .isInstanceOf(RetrieveUserException.class);
+    assertThatThrownBy(() -> orderService.create(newDto)).isInstanceOf(RetrieveUserException.class);
 
-    verify(orderRepository).save(mockOrderEntity);
+    verifyNoInteractions(orderRepository);
   }
 
   @Test
@@ -274,9 +274,6 @@ public class OrderServiceTests {
     OrderDto newDto =
         new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
 
-    when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
-    when(orderRepository.save(mockOrderEntity)).thenReturn(mockOrderEntity);
-    when(orderMapper.toDto(mockOrderEntity)).thenReturn(mockOrderDto);
     when(userServiceClient.getUserByEmail(newDto.userEmail()))
         .thenThrow(new RuntimeException("Unexpected database error"));
 
@@ -284,7 +281,7 @@ public class OrderServiceTests {
         .isInstanceOf(RetrieveUserException.class)
         .hasMessageContaining("An unexpected error occurred while retrieving user");
 
-    verify(orderRepository).save(mockOrderEntity);
+    verifyNoInteractions(orderRepository);
   }
 
   @Test
@@ -346,7 +343,7 @@ public class OrderServiceTests {
   @Test
   void findBySpecification_ShouldThrowRetrieveUserException_WhenUserClientFails() {
     Pageable pageable = PageRequest.of(0, 10);
-    Specification<Order> dummySpec = Specification.unrestricted();
+    Specification<Order> dummySpec = OrderSpecifications.all();
     Page<Order> mockPage = new PageImpl<>(List.of(mockOrderEntity), pageable, 1);
 
     when(orderRepository.findAll(eq(dummySpec), eq(pageable))).thenReturn(mockPage);
@@ -362,7 +359,7 @@ public class OrderServiceTests {
   @Test
   void findBySpecification_ShouldPropagateException_WhenRepositoryFails() {
     Pageable pageable = PageRequest.of(0, 10);
-    Specification<Order> dummySpec = Specification.unrestricted();
+    Specification<Order> dummySpec = OrderSpecifications.all();
 
     when(orderRepository.findAll(eq(dummySpec), eq(pageable)))
         .thenThrow(new RuntimeException("Database connection failed"));
@@ -379,6 +376,7 @@ public class OrderServiceTests {
     OrderDto newDto =
         new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
 
+    when(userServiceClient.getUserByEmail(newDto.userEmail())).thenReturn(mockUserDto);
     when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
     when(orderRepository.save(mockOrderEntity))
         .thenThrow(new RuntimeException("Database constraint violation"));
@@ -387,7 +385,8 @@ public class OrderServiceTests {
         .isInstanceOf(RuntimeException.class)
         .hasMessageContaining("Database constraint violation");
 
-    verifyNoInteractions(userServiceClient);
+    verify(userServiceClient).getUserByEmail(newDto.userEmail());
+    verify(orderRepository).save(mockOrderEntity);
   }
 
   @Test

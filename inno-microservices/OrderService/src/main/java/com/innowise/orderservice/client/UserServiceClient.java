@@ -1,5 +1,6 @@
 package com.innowise.orderservice.client;
 
+import com.innowise.orderservice.config.FeignConfig;
 import com.innowise.orderservice.model.dto.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * the Order DTOs (OrderUserDto) during a request lifecycle in the Order Service. * The base URL for
  * this client is defined by the property {@code userservice.url}.
  */
-@FeignClient(name = "userservice", url = "${userservice.url}")
+@FeignClient(name = "userservice", url = "${userservice.url}", configuration = FeignConfig.class)
 public interface UserServiceClient {
 
   /**

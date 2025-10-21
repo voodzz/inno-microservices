@@ -3,8 +3,6 @@ package com.innowise.orderservice.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collection;
-
 /**
  * Generic CRUD (Create, Read, Update, Delete) service interface for managing entities.
  *

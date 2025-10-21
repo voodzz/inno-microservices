@@ -33,7 +33,7 @@ public interface OrderMapper {
    * @param order the order entity to convert
    * @return the corresponding {@link OrderDto}
    */
-  @Mapping(target = "userEmail", ignore = true)
+  @Mapping(source = "userEmail", target = "userEmail")
   OrderDto toDto(Order order);
 
   /**
@@ -42,7 +42,6 @@ public interface OrderMapper {
    * @param orders the list of order entities to convert
    * @return a list of corresponding {@link OrderDto} objects
    */
-  @Mapping(target = "userEmail", ignore = true)
   List<OrderDto> toDtoList(List<Order> orders);
 
   /**

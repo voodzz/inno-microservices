@@ -8,7 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ExceptionClassesTests {
+public class ExceptionClassesTests {
 
   @Test
   @DisplayName("NotFoundException should create with default constructor")

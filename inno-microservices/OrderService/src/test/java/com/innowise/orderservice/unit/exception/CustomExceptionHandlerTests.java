@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CustomExceptionHandlerTests {
+public class CustomExceptionHandlerTests {
 
     private final CustomExceptionHandler exceptionHandler = new CustomExceptionHandler();
 
