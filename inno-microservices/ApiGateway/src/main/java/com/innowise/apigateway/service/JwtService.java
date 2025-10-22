@@ -17,13 +17,6 @@ public class JwtService {
   @Value("${security.jwt.secret-key}")
   private String secretKey;
 
-  @Value("${security.jwt.access-expiration-time}")
-  private Long accessTokenExpiration;
-
-  @Getter
-  @Value("${security.jwt.refresh-expiration-time}")
-  private Long refreshTokenExpiration;
-
   public boolean isTokenValid(String token) {
     return !isTokenExpired(token);
   }
