@@ -39,27 +39,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
   @Query("SELECT o FROM Order o WHERE o.id = :id")
   Optional<Order> findOrderById(@Param("id") Long id);
 
-//  /**
-//   * Retrieves all orders which IDs are in the given collection.
-//   *
-//   * @param ids the collection of order IDs
-//   * @param pageable the pagination information
-//   * @return a page of orders matching the provided IDs
-//   */
-//  @Query("SELECT o FROM Order o WHERE o.id IN :ids")
-//  Page<Order> findOrdersByIdIn(@Param("ids") Collection<Long> ids, Pageable pageable);
-//
-//  /**
-//   * Retrieves all orders which statuses are in the given collection
-//   *
-//   * @param statuses the collection of order statuses
-//   * @param pageable the pagination information
-//   * @return a page of orders with statuses matching the provided
-//   */
-//  @Query("SELECT o FROM Order o WHERE o.status IN :statuses")
-//  Page<Order> findOrdersByStatusIn(
-//      @Param("statuses") Collection<StatusEnum> statuses, Pageable pageable);
-
   /**
    * Retrieves all orders
    *
