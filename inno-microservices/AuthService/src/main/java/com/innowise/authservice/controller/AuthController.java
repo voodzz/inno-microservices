@@ -3,6 +3,7 @@ package com.innowise.authservice.controller;
 import com.innowise.authservice.model.dto.AuthRequest;
 import com.innowise.authservice.model.dto.AuthResponse;
 import com.innowise.authservice.model.dto.RefreshTokenRequest;
+import com.innowise.authservice.model.dto.RegisterUserRequest;
 import com.innowise.authservice.model.entity.User;
 import com.innowise.authservice.service.AuthService;
 import com.innowise.authservice.service.JwtService;
@@ -35,7 +36,7 @@ public class AuthController {
   private final JwtService jwtService;
 
   @PostMapping("/register")
-  public ResponseEntity<Void> register(@RequestBody @Valid AuthRequest request) {
+  public ResponseEntity<Void> register(@RequestBody @Valid RegisterUserRequest request) {
     User user = authService.register(request);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
