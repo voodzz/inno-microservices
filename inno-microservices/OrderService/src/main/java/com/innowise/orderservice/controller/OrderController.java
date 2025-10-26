@@ -48,15 +48,15 @@ public class OrderController {
       @RequestParam(required = false) Collection<StatusEnum> statuses,
       @PageableDefault Pageable pageable) {
     Specification<Order> specification =
-        Specification.anyOf(
+        Specification.allOf(
             OrderSpecifications.hasIdIn(ids), OrderSpecifications.hasStatusIn(statuses));
     return ResponseEntity.ok(orderService.findBySpecification(specification, pageable));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody OrderDto dto) {
-    orderService.updateById(id, dto);
-    return ResponseEntity.noContent().build();
+  public ResponseEntity<OrderUserDto> update(@PathVariable Long id, @Valid @RequestBody OrderDto dto) {
+      OrderUserDto orderUserDto = orderService.updateById(id, dto);
+      return ResponseEntity.ok(orderUserDto);
   }
 
   @DeleteMapping("/{id}")
