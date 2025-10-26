@@ -1,5 +1,6 @@
 package com.innowise.orderservice.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -79,5 +80,20 @@ public class CustomExceptionHandler {
     body.put(CAUSE, ex.getCause());
     body.put(ERROR, ex.getMessage());
     return ResponseEntity.internalServerError().body(body);
+  }
+
+  /**
+   * Handles custom {@link NotFoundException} errors.
+   *
+   * @param ex the exception indicating that such user is not present
+   * @return a {@link ResponseEntity} with status 404 (Not Found) and a map containing the error
+   *     message and a timestamp
+   */
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<Map<String, String>> handleNotFoundException(NotFoundException ex) {
+    Map<String, String> error = new HashMap<>();
+    error.put(ERROR, ex.getMessage());
+    error.put(TIMESTAMP, LocalDateTime.now().toString());
+    return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
   }
 }
