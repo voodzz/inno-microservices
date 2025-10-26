@@ -57,7 +57,8 @@ public class OrderControllerTests {
   void setUp() {
     testUserDto = new UserDto(1L, "Ivan", "Ivanov", LocalDate.of(1990, 1, 1), "ivan@test.com");
     testOrderDto =
-        new OrderDto(1L, 10L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "ivan@test.com");
+        new OrderDto(
+            1L, 10L, StatusEnum.PENDING, LocalDate.now().minusDays(1), List.of(), "ivan@test.com");
     testOrderUserDto = new OrderUserDto(testOrderDto, testUserDto);
   }
 
@@ -67,7 +68,7 @@ public class OrderControllerTests {
 
     mockMvc
         .perform(
-                post("/api/v1/orders")
+            post("/api/v1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testOrderDto)))
         .andExpect(status().isCreated())
@@ -92,16 +93,16 @@ public class OrderControllerTests {
   }
 
   @Test
-  void update_ShouldReturnNoContent() throws Exception {
+  void update_ShouldReturnUpdatedContent() throws Exception {
     Long orderId = 1L;
     when(orderService.updateById(eq(orderId), any(OrderDto.class))).thenReturn(testOrderUserDto);
 
     mockMvc
         .perform(
-                put("/api/v1/orders/{id}", orderId)
+            put("/api/v1/orders/{id}", orderId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testOrderDto)))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk());
 
     verify(orderService, times(1)).updateById(eq(orderId), any(OrderDto.class));
   }

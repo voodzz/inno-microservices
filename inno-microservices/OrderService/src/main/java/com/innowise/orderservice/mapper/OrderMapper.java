@@ -15,7 +15,7 @@ import java.util.List;
  * <p>Implementations are generated automatically by MapStruct at compile time. This mapper is
  * configured as a Spring component for dependency injection.
  */
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = OrderItemMapper.class)
 public interface OrderMapper {
 
   /**
@@ -24,7 +24,6 @@ public interface OrderMapper {
    * @param dto the order DTO containing data
    * @return the corresponding {@link Order} entity
    */
-  @Mapping(target = "orderItems", ignore = true)
   Order toEntity(OrderDto dto);
 
   /**

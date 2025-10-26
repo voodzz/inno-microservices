@@ -24,5 +24,5 @@ public record OrderDto(
     @NotNull(message = "userId must not be null") Long userId,
     @NotNull(message = "order must have a status") StatusEnum status,
     @PastOrPresent(message = "creationDate must be in the past or today") LocalDate creationDate,
-    @NotNull(message = "item list must not be null") List<OrderItemDto> items,
+    @NotNull(message = "item list must not be null") List<OrderItemDto> orderItems,
     @Email String userEmail) {}

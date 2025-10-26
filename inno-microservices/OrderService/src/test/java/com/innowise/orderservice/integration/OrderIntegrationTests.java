@@ -82,7 +82,12 @@ public class OrderIntegrationTests {
     testUser = new UserDto(1L, "John", "Doe", LocalDate.of(1990, 1, 1), "john.doe@example.com");
     testOrderDto =
         new OrderDto(
-            null, 1L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "john.doe@example.com");
+            null,
+            1L,
+            StatusEnum.PENDING,
+            LocalDate.now().minusDays(1),
+            List.of(),
+            "john.doe@example.com");
 
     orderRepository.deleteAll();
     wireMockServer.start();
@@ -124,7 +129,12 @@ public class OrderIntegrationTests {
 
     OrderDto orderWithNonExistentUser =
         new OrderDto(
-            null, 1L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "nonexistent@example.com");
+            null,
+            1L,
+            StatusEnum.PENDING,
+            LocalDate.now().minusDays(1),
+            List.of(),
+            "nonexistent@example.com");
 
     assertThat(
         assertThrows(
@@ -168,6 +178,7 @@ public class OrderIntegrationTests {
             1L,
             StatusEnum.CONFIRMED,
             savedOrder.getCreationDate(),
+            List.of(),
             "john.doe@example.com");
     setupUserServiceMock("john.doe@example.com", testUser, 200);
 

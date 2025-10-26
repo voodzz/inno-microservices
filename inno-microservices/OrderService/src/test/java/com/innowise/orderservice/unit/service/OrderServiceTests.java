@@ -37,7 +37,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -53,7 +52,7 @@ public class OrderServiceTests {
 
   private final Order mockOrderEntity = new Order();
   private final OrderDto mockOrderDto =
-      new OrderDto(1L, 100L, StatusEnum.PENDING, LocalDate.now(), "test@example.com");
+      new OrderDto(1L, 100L, StatusEnum.PENDING, LocalDate.now(), List.of(), "test@example.com");
   private final UserDto mockUserDto = new UserDto(100L, "John", "Doe", null, "test@example.com");
 
   @Test
@@ -88,10 +87,17 @@ public class OrderServiceTests {
   @Test
   void create_ShouldSaveAndReturnOrderUserDto() {
     OrderDto newDto =
-        new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
+        new OrderDto(
+            null,
+            100L,
+            StatusEnum.PENDING,
+            LocalDate.now().minusDays(1),
+            List.of(),
+            "new@test.com");
     Order savedEntity = new Order();
     OrderDto savedDto =
-        new OrderDto(2L, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
+        new OrderDto(
+            2L, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), List.of(), "new@test.com");
 
     when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
     when(orderRepository.save(mockOrderEntity)).thenReturn(savedEntity);
@@ -108,9 +114,10 @@ public class OrderServiceTests {
   void updateById_ShouldReturnUpdatedOrderUserDto_OnSuccess() {
     Long orderId = 1L;
     OrderDto updateDto =
-        new OrderDto(orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), "test@example.com");
+        new OrderDto(
+            orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), List.of(), "test@example.com");
 
-    when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
+    when(orderRepository.existsById(orderId)).thenReturn(true);
     when(orderRepository.updateById(orderId, updateDto.status())).thenReturn(1);
     when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
 
@@ -119,29 +126,33 @@ public class OrderServiceTests {
 
     orderService.updateById(orderId, updateDto);
 
-    verify(orderRepository, times(2)).findOrderById(orderId);
+    verify(orderRepository).existsById(orderId);
     verify(orderRepository).updateById(orderId, updateDto.status());
+    verify(orderRepository).findOrderById(orderId);
   }
 
   @Test
   void updateById_ShouldThrowNotFoundException_WhenOrderToUpdateNotFound() {
     Long orderId = 99L;
     OrderDto updateDto =
-        new OrderDto(orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), "test@example.com");
+        new OrderDto(
+            orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), List.of(), "test@example.com");
 
-    when(orderRepository.findOrderById(orderId)).thenReturn(Optional.empty());
+    when(orderRepository.existsById(orderId)).thenReturn(false);
 
     assertThatThrownBy(() -> orderService.updateById(orderId, updateDto))
-        .isInstanceOf(NotFoundException.class);
+        .isInstanceOf(UpdateException.class)
+        .hasCauseInstanceOf(NotFoundException.class);
   }
 
   @Test
   void updateById_ShouldThrowUpdateException_WhenNoRowsAffected() {
     Long orderId = 1L;
     OrderDto updateDto =
-        new OrderDto(orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), "test@example.com");
+        new OrderDto(
+            orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), List.of(), "test@example.com");
 
-    when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
+    when(orderRepository.existsById(orderId)).thenReturn(true);
     when(orderRepository.updateById(orderId, updateDto.status())).thenReturn(0);
 
     assertThatThrownBy(() -> orderService.updateById(orderId, updateDto))
@@ -246,7 +257,13 @@ public class OrderServiceTests {
   @Test
   void create_ShouldThrowRetrieveUserException_WhenUserClientFails() {
     OrderDto newDto =
-        new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
+        new OrderDto(
+            null,
+            100L,
+            StatusEnum.PENDING,
+            LocalDate.now().minusDays(1),
+            List.of(),
+            "new@test.com");
 
     when(userServiceClient.getUserByEmail(newDto.userEmail()))
         .thenThrow(mock(FeignException.NotFound.class));
@@ -259,7 +276,13 @@ public class OrderServiceTests {
   @Test
   void create_ShouldThrowRetrieveUserException_WhenUserClientFailsWithGenericFeign() {
     OrderDto newDto =
-        new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
+        new OrderDto(
+            null,
+            100L,
+            StatusEnum.PENDING,
+            LocalDate.now().minusDays(1),
+            List.of(),
+            "new@test.com");
 
     when(userServiceClient.getUserByEmail(newDto.userEmail()))
         .thenThrow(mock(FeignException.class));
@@ -272,7 +295,13 @@ public class OrderServiceTests {
   @Test
   void create_ShouldThrowRetrieveUserException_WhenUserClientFailsWithUnexpectedError() {
     OrderDto newDto =
-        new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
+        new OrderDto(
+            null,
+            100L,
+            StatusEnum.PENDING,
+            LocalDate.now().minusDays(1),
+            List.of(),
+            "new@test.com");
 
     when(userServiceClient.getUserByEmail(newDto.userEmail()))
         .thenThrow(new RuntimeException("Unexpected database error"));
@@ -288,9 +317,10 @@ public class OrderServiceTests {
   void updateById_ShouldThrowRetrieveUserException_WhenUserClientFails() {
     Long orderId = 1L;
     OrderDto updateDto =
-        new OrderDto(orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), "test@example.com");
+        new OrderDto(
+            orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), List.of(), "test@example.com");
 
-    when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
+    when(orderRepository.existsById(orderId)).thenReturn(true);
     when(orderRepository.updateById(orderId, updateDto.status())).thenReturn(1);
     when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
     when(orderMapper.toDto(any(Order.class))).thenReturn(updateDto);
@@ -308,10 +338,11 @@ public class OrderServiceTests {
   void updateById_ShouldThrowRetrieveUserException_WhenUserClientFailsAfterSuccessfulUpdate() {
     Long orderId = 1L;
     OrderDto updateDto =
-        new OrderDto(orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), "test@example.com");
+        new OrderDto(
+            orderId, 100L, StatusEnum.SHIPPED, LocalDate.now(), List.of(), "test@example.com");
     Order updatedOrder = new Order();
 
-    when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
+    when(orderRepository.existsById(orderId)).thenReturn(true);
     when(orderRepository.updateById(orderId, updateDto.status())).thenReturn(1);
     when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(updatedOrder));
     when(orderMapper.toDto(updatedOrder)).thenReturn(updateDto);
@@ -374,7 +405,13 @@ public class OrderServiceTests {
   @Test
   void create_ShouldPropagateException_WhenRepositorySaveFails() {
     OrderDto newDto =
-        new OrderDto(null, 100L, StatusEnum.PENDING, LocalDate.now().minusDays(1), "new@test.com");
+        new OrderDto(
+            null,
+            100L,
+            StatusEnum.PENDING,
+            LocalDate.now().minusDays(1),
+            List.of(),
+            "new@test.com");
 
     when(userServiceClient.getUserByEmail(newDto.userEmail())).thenReturn(mockUserDto);
     when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);

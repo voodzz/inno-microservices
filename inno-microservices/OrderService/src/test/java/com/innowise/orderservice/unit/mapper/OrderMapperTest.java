@@ -1,12 +1,15 @@
 package com.innowise.orderservice.unit.mapper;
 
+import com.innowise.orderservice.mapper.OrderItemMapper;
 import com.innowise.orderservice.mapper.OrderMapper;
 import com.innowise.orderservice.model.StatusEnum;
 import com.innowise.orderservice.model.dto.OrderDto;
 import com.innowise.orderservice.model.entity.Order;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +18,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class OrderMapperTest {
 
-  private final OrderMapper mapper = Mappers.getMapper(OrderMapper.class);
+  private OrderMapper mapper;
+  private OrderItemMapper orderItemMapper;
+
+  @BeforeEach
+  void setUp() throws Exception {
+    mapper = Mappers.getMapper(OrderMapper.class);
+    orderItemMapper = Mappers.getMapper(OrderItemMapper.class);
+
+    Field field = mapper.getClass().getDeclaredField("orderItemMapper");
+    field.setAccessible(true);
+    field.set(mapper, orderItemMapper);
+  }
 
   private final LocalDate testDate = LocalDate.of(2023, 10, 18);
   private final Long orderId = 1L;
@@ -33,7 +47,7 @@ public class OrderMapperTest {
   }
 
   private OrderDto createOrderDto(Long id, StatusEnum status) {
-    return new OrderDto(id, testUserId, status, testDate, testEmail);
+    return new OrderDto(id, testUserId, status, testDate, List.of(), testEmail);
   }
 
   @Test
