@@ -43,14 +43,4 @@ public class OrderItem {
 
   @Column(nullable = false)
   private Integer quantity;
-
-  public void setOrder(Order order) {
-    this.order = order;
-    order.getOrderItems().add(this);
-  }
-
-  public void setItem(Item item) {
-    this.item = item;
-    item.getOrderItems().add(this);
-  }
 }
