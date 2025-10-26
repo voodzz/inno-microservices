@@ -16,6 +16,10 @@ public class UpdateException extends RuntimeException {
     super(MESSAGE_TEMP.formatted(id));
   }
 
+  public UpdateException(Long id, Throwable cause) {
+    super(MESSAGE_TEMP.formatted(id), cause);
+  }
+
   public UpdateException(String message, Throwable cause) {
     super(message, cause);
   }

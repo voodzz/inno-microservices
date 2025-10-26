@@ -63,7 +63,9 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   @Transactional
   @Override
   public OrderUserDto updateById(Long id, OrderDto dto) {
-    orderRepository.findOrderById(id).orElseThrow(() -> new NotFoundException(id));
+    if (!orderRepository.existsById(id)) {
+      throw new UpdateException(id, new NotFoundException(id));
+    }
 
     int updated = orderRepository.updateById(id, dto.status());
 
@@ -85,13 +87,16 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   }
 
   private OrderUserDto combineWithUser(OrderDto orderDto) {
-    try {
-      UserDto userDto;
-      userDto = userServiceClient.getUserByEmail(orderDto.userEmail());
+      UserDto userDto = fetchUser(orderDto.userEmail());
       return new OrderUserDto(orderDto, userDto);
+  }
+
+  private UserDto fetchUser(String email) {
+    try {
+      return userServiceClient.getUserByEmail(email);
     } catch (FeignException.NotFound notFound) {
       throw new RetrieveUserException(
-          "User with email '%s' not found".formatted(orderDto.userEmail()));
+          "User with email '%s' not found".formatted(email));
     } catch (FeignException e) {
       throw new RetrieveUserException(
           "Communication error with User Service: " + e.getMessage(), e);
