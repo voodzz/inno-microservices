@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
     container_name: authservice-app
     ports:
-      - "8081:8080"
+      - "8081:8081"
     depends_on:
       - authservice-postgres
     env_file:
@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     container_name: orderservice-app
     ports:
-      - "8082:8080"
+      - "8082:8082"
     depends_on:
       - orderservice-postgres
     env_file:
@@ -51,6 +51,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SECURITY_JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      USERSERVICE_URL: http://userservice:8080
 
   redis:
     image: redis/redis-stack:latest

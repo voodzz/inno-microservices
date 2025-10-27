@@ -1,6 +1,7 @@
 package com.innowise.orderservice.service.impl;
 
 import com.innowise.orderservice.client.UserServiceClient;
+import com.innowise.orderservice.exception.CircuitBreakerOpenException;
 import com.innowise.orderservice.exception.NotFoundException;
 import com.innowise.orderservice.exception.RetrieveUserException;
 import com.innowise.orderservice.exception.UpdateException;
@@ -87,16 +88,18 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   }
 
   private OrderUserDto combineWithUser(OrderDto orderDto) {
-      UserDto userDto = fetchUser(orderDto.userEmail());
-      return new OrderUserDto(orderDto, userDto);
+    UserDto userDto = fetchUser(orderDto.userEmail());
+    return new OrderUserDto(orderDto, userDto);
   }
 
   private UserDto fetchUser(String email) {
     try {
       return userServiceClient.getUserByEmail("email", email).getFirst();
-    } catch (FeignException.NotFound notFound) {
+    } catch (CircuitBreakerOpenException e) {
       throw new RetrieveUserException(
-          "User with email '%s' not found".formatted(email));
+          "User Service is currently unavailable. Please try again later.", e);
+    } catch (FeignException.NotFound notFound) {
+      throw new RetrieveUserException("User with email '%s' not found".formatted(email));
     } catch (FeignException e) {
       throw new RetrieveUserException(
           "Communication error with User Service: " + e.getMessage(), e);

@@ -96,4 +96,20 @@ public class CustomExceptionHandler {
     error.put(TIMESTAMP, LocalDateTime.now().toString());
     return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
   }
+
+  /**
+   * Handles custom {@link CircuitBreakerOpenException} errors.
+   *
+   * @param ex the exception thrown
+   * @return a {@link ResponseEntity} with status 500 (Internal Server Error) and a map containing a
+   *     timestamp and the cause
+   */
+  @ExceptionHandler(CircuitBreakerOpenException.class)
+  public ResponseEntity<Map<String, Object>> handleCircuitBreakerOpenException(
+      CircuitBreakerOpenException ex) {
+    Map<String, Object> body = new HashMap<>();
+    body.put(TIMESTAMP, LocalDateTime.now().toString());
+    body.put(CAUSE, ex.getCause());
+    return ResponseEntity.internalServerError().body(body);
+  }
 }
