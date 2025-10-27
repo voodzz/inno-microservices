@@ -56,8 +56,8 @@ public class OrderItemMapperTest {
 
     assertThat(dto).isNotNull();
     assertThat(dto.id()).isEqualTo(orderItemId);
-    assertThat(dto.order_id()).isEqualTo(testOrderId);
-    assertThat(dto.item_id()).isEqualTo(testItemId);
+    assertThat(dto.orderId()).isEqualTo(testOrderId);
+    assertThat(dto.itemId()).isEqualTo(testItemId);
     assertThat(dto.quantity()).isEqualTo(testQuantity);
   }
 

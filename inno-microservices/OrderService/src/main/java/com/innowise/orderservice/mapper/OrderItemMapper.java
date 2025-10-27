@@ -33,8 +33,8 @@ public interface OrderItemMapper {
    * @param entity the OrderItem entity to convert
    * @return the corresponding {@link OrderItemDto}
    */
-  @Mapping(source = "order.id", target = "order_id")
-  @Mapping(source = "item.id", target = "item_id")
+  @Mapping(source = "order.id", target = "orderId")
+  @Mapping(source = "item.id", target = "itemId")
   OrderItemDto toDto(OrderItem entity);
 
   /**
