@@ -16,6 +16,14 @@ java {
     }
 }
 
+sonarqube {
+    properties {
+        property "sonar.issue.ignore.multicriteria", "c1"
+        property "sonar.issue.ignore.multicriteria.c1.ruleKey", "java:S4502"
+        property "sonar.issue.ignore.multicriteria.c1.resourceKey", "**/SecurityConfig.java"
+    }
+}
+
 jacoco {
     toolVersion = "0.8.13"
 }

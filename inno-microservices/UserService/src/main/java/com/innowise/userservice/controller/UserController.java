@@ -77,7 +77,7 @@ public class UserController {
    *     (OK), or 204 (No Content) if no users are found
    */
   @GetMapping
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('SERVICE')")
   public ResponseEntity<List<UserDto>> findBy(
       @RequestParam(required = false) String filter,
       @RequestParam(required = false) List<Long> ids,

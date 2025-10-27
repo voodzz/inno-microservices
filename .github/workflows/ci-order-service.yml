@@ -1,4 +1,4 @@
-name: CI pipeline
+name: OrderService CI
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 defaults:
   run:
-    working-directory: inno-microservices/UserService
+    working-directory: inno-microservices/OrderService
 
 jobs:
   build:
@@ -102,7 +102,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: inno-microservices/UserService
-          file: inno-microservices/UserService/Dockerfile
+          context: inno-microservices/OrderService
+          file: inno-microservices/OrderService/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/userservice:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/orderservice:latest
