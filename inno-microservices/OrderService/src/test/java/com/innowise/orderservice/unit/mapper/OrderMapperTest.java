@@ -51,8 +51,22 @@ public class OrderMapperTest {
   }
 
   @Test
-  void toDto_ShouldMapEntityToDto_AndSetUserEmailNull() {
+  void toDto_ShouldMapEntityToDto_AndMapUserEmail() {
     Order entity = createOrderEntity();
+    entity.setUserEmail(testEmail);
+
+    OrderDto dto = mapper.toDto(entity);
+
+    assertThat(dto).isNotNull();
+    assertThat(dto.id()).isEqualTo(orderId);
+    assertThat(dto.userId()).isEqualTo(testUserId);
+    assertThat(dto.userEmail()).isEqualTo(testEmail);
+  }
+
+  @Test
+  void toDto_ShouldMapEntityToDto_WhenUserEmailIsNull() {
+    Order entity = createOrderEntity();
+    entity.setUserEmail(null);
 
     OrderDto dto = mapper.toDto(entity);
 

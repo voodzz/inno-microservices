@@ -93,7 +93,7 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
 
   private UserDto fetchUser(String email) {
     try {
-      return userServiceClient.getUserByEmail(email);
+      return userServiceClient.getUserByEmail("email", email).getFirst();
     } catch (FeignException.NotFound notFound) {
       throw new RetrieveUserException(
           "User with email '%s' not found".formatted(email));

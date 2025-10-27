@@ -32,7 +32,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -74,6 +75,7 @@ public class OrderIntegrationTests {
   static void initialize() {
     wireMockServer =
         new WireMockServer(options().port(8089).extensions(new ResponseTemplateTransformer(false)));
+    wireMockServer.start();
     configureFor("localhost", 8089);
   }
 
@@ -90,16 +92,17 @@ public class OrderIntegrationTests {
             "john.doe@example.com");
 
     orderRepository.deleteAll();
-    wireMockServer.start();
+    wireMockServer.resetMappings();
   }
 
   @AfterEach
   void afterEach() {
-    wireMockServer.stop();
+    wireMockServer.resetMappings();
   }
 
   @AfterAll
   static void destroy() {
+    wireMockServer.stop();
     wireMockServer.shutdown();
   }
 
@@ -218,17 +221,15 @@ public class OrderIntegrationTests {
   private void setupUserServiceMock(String email, UserDto user, int statusCode) throws Exception {
     if (statusCode == 200 && user != null) {
       stubFor(
-          get(urlPathEqualTo("/api/v1/users"))
-              .withQueryParam("email", equalTo(email))
+          get(urlMatching("/api/v1/users\\?filter=email&email=.+"))
               .willReturn(
                   aResponse()
                       .withStatus(200)
                       .withHeader("Content-Type", "application/json")
-                      .withBody(objectMapper.writeValueAsString(user))));
+                      .withBody(objectMapper.writeValueAsString(List.of(user)))));
     } else if (statusCode == 404) {
       stubFor(
-          get(urlPathEqualTo("/api/v1/users"))
-              .withQueryParam("email", equalTo(email))
+          get(urlMatching("/api/v1/users\\?filter=email&email=.+"))
               .willReturn(
                   aResponse()
                       .withStatus(404)
@@ -236,8 +237,7 @@ public class OrderIntegrationTests {
                       .withBody("{\"error\":\"User not found\"}")));
     } else if (statusCode == 500) {
       stubFor(
-          get(urlPathEqualTo("/api/v1/users"))
-              .withQueryParam("email", equalTo(email))
+          get(urlMatching("/api/v1/users\\?filter=email&email=.+"))
               .willReturn(
                   aResponse()
                       .withStatus(500)

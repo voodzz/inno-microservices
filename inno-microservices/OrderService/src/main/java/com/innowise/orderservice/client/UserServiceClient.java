@@ -2,9 +2,13 @@ package com.innowise.orderservice.client;
 
 import com.innowise.orderservice.config.FeignConfig;
 import com.innowise.orderservice.model.dto.UserDto;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * Declarative REST client for inter-service communication with the User Service.
@@ -28,5 +32,6 @@ public interface UserServiceClient {
    *     is not found, 500 for internal errors).
    */
   @GetMapping("/api/v1/users")
-  UserDto getUserByEmail(@RequestParam String email);
+  @CircuitBreaker(name = "user-service")
+  List<UserDto> getUserByEmail(@RequestParam String filter, @RequestParam String email);
 }

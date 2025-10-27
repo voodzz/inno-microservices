@@ -62,7 +62,7 @@ public class OrderServiceTests {
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrderEntity));
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail())).thenReturn(mockUserDto);
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail())).thenReturn(List.of(mockUserDto));
 
     OrderUserDto result = orderService.findById(orderId);
 
@@ -102,7 +102,7 @@ public class OrderServiceTests {
     when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
     when(orderRepository.save(mockOrderEntity)).thenReturn(savedEntity);
     when(orderMapper.toDto(savedEntity)).thenReturn(savedDto);
-    when(userServiceClient.getUserByEmail(newDto.userEmail())).thenReturn(mockUserDto);
+    when(userServiceClient.getUserByEmail("email", newDto.userEmail())).thenReturn(List.of(mockUserDto));
 
     OrderUserDto result = orderService.create(newDto);
 
@@ -122,7 +122,7 @@ public class OrderServiceTests {
     when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
 
     when(orderMapper.toDto(any(Order.class))).thenReturn(updateDto);
-    when(userServiceClient.getUserByEmail(updateDto.userEmail())).thenReturn(mockUserDto);
+    when(userServiceClient.getUserByEmail("email", updateDto.userEmail())).thenReturn(List.of(mockUserDto));
 
     orderService.updateById(orderId, updateDto);
 
@@ -190,7 +190,7 @@ public class OrderServiceTests {
     Long orderId = 1L;
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrderEntity));
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
         .thenThrow(mock(FeignException.NotFound.class));
 
     assertThatThrownBy(() -> orderService.findById(orderId))
@@ -203,7 +203,7 @@ public class OrderServiceTests {
     Long orderId = 1L;
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrderEntity));
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
         .thenThrow(mock(FeignException.class));
 
     assertThatThrownBy(() -> orderService.findById(orderId))
@@ -216,7 +216,7 @@ public class OrderServiceTests {
     Long orderId = 1L;
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrderEntity));
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
         .thenThrow(new RuntimeException("Test unexpected error"));
 
     assertThatThrownBy(() -> orderService.findById(orderId))
@@ -231,7 +231,7 @@ public class OrderServiceTests {
 
     when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(mockPage);
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail())).thenReturn(mockUserDto);
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail())).thenReturn(List.of(mockUserDto));
 
     orderService.findAll(pageable);
 
@@ -246,7 +246,7 @@ public class OrderServiceTests {
 
     when(orderRepository.findAll(eq(dummySpec), eq(pageable))).thenReturn(mockPage);
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail())).thenReturn(mockUserDto);
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail())).thenReturn(List.of(mockUserDto));
 
     Page<OrderUserDto> result = orderService.findBySpecification(dummySpec, pageable);
 
@@ -265,7 +265,7 @@ public class OrderServiceTests {
             List.of(),
             "new@test.com");
 
-    when(userServiceClient.getUserByEmail(newDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", newDto.userEmail()))
         .thenThrow(mock(FeignException.NotFound.class));
 
     assertThatThrownBy(() -> orderService.create(newDto)).isInstanceOf(RetrieveUserException.class);
@@ -284,7 +284,7 @@ public class OrderServiceTests {
             List.of(),
             "new@test.com");
 
-    when(userServiceClient.getUserByEmail(newDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", newDto.userEmail()))
         .thenThrow(mock(FeignException.class));
 
     assertThatThrownBy(() -> orderService.create(newDto)).isInstanceOf(RetrieveUserException.class);
@@ -303,7 +303,7 @@ public class OrderServiceTests {
             List.of(),
             "new@test.com");
 
-    when(userServiceClient.getUserByEmail(newDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", newDto.userEmail()))
         .thenThrow(new RuntimeException("Unexpected database error"));
 
     assertThatThrownBy(() -> orderService.create(newDto))
@@ -324,7 +324,7 @@ public class OrderServiceTests {
     when(orderRepository.updateById(orderId, updateDto.status())).thenReturn(1);
     when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
     when(orderMapper.toDto(any(Order.class))).thenReturn(updateDto);
-    when(userServiceClient.getUserByEmail(updateDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", updateDto.userEmail()))
         .thenThrow(mock(FeignException.NotFound.class));
 
     assertThatThrownBy(() -> orderService.updateById(orderId, updateDto))
@@ -346,7 +346,7 @@ public class OrderServiceTests {
     when(orderRepository.updateById(orderId, updateDto.status())).thenReturn(1);
     when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(updatedOrder));
     when(orderMapper.toDto(updatedOrder)).thenReturn(updateDto);
-    when(userServiceClient.getUserByEmail(updateDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", updateDto.userEmail()))
         .thenThrow(new RuntimeException("Network error"));
 
     assertThatThrownBy(() -> orderService.updateById(orderId, updateDto))
@@ -363,7 +363,7 @@ public class OrderServiceTests {
 
     when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(mockPage);
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
         .thenThrow(mock(FeignException.NotFound.class));
 
     assertThatThrownBy(() -> orderService.findAll(pageable))
@@ -379,7 +379,7 @@ public class OrderServiceTests {
 
     when(orderRepository.findAll(eq(dummySpec), eq(pageable))).thenReturn(mockPage);
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail(mockOrderDto.userEmail()))
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
         .thenThrow(mock(FeignException.class));
 
     assertThatThrownBy(() -> orderService.findBySpecification(dummySpec, pageable))
@@ -413,7 +413,7 @@ public class OrderServiceTests {
             List.of(),
             "new@test.com");
 
-    when(userServiceClient.getUserByEmail(newDto.userEmail())).thenReturn(mockUserDto);
+    when(userServiceClient.getUserByEmail("email", newDto.userEmail())).thenReturn(List.of(mockUserDto));
     when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
     when(orderRepository.save(mockOrderEntity))
         .thenThrow(new RuntimeException("Database constraint violation"));
@@ -422,7 +422,7 @@ public class OrderServiceTests {
         .isInstanceOf(RuntimeException.class)
         .hasMessageContaining("Database constraint violation");
 
-    verify(userServiceClient).getUserByEmail(newDto.userEmail());
+    verify(userServiceClient).getUserByEmail("email", newDto.userEmail());
     verify(orderRepository).save(mockOrderEntity);
   }
 
