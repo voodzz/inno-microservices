@@ -21,8 +21,8 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
       List.of("/api/v1/auth/login", "/api/v1/auth/register");
 
   @Autowired
-  public JwtAuthFilter(Class<Config> configClass, JwtService jwtService) {
-    super(configClass);
+  public JwtAuthFilter(JwtService jwtService) {
+    super(Config.class);
     this.jwtService = jwtService;
   }
 

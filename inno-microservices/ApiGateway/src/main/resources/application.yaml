@@ -28,7 +28,7 @@ spring:
                 - name: CircuitBreaker
                   args:
                     name: authService
-                    fallbackUri: forward:/fallback/user
+                    fallbackUri: forward:/fallback/users
 
             - id: order-service
               uri: ${ORDER_SERVICE_URI:http://localhost:8083}
@@ -39,13 +39,21 @@ spring:
                 - name: CircuitBreaker
                   args:
                     name: orderService
-                    fallbackUri: forward:/fallback/order
+                    fallbackUri: forward:/fallback/orders
 
 security:
   jwt:
-    secret-key: ${JWT_SECRET_KEY}
-    access-expiration-time: ${JWT_ACCESS_EXP_MS}
-    refresh-expiration-time: ${JWT_REFRESH_EXP_MS}
+    secret-key: c528ba3b9bf887b6367e34761df7e6f1847cadf5a7b3e8820eac53ac96eca997
+    access-expiration-time: 900000
+    refresh-expiration-time: 86400000
+
+user:
+  service:
+    uri: ${USER_SERVICE_URI:http://localhost:8081}
+
+auth:
+  service:
+    uri: ${AUTH_SERVICE_URI:http://localhost:8082}
 
 resilience4j:
   circuitbreaker:
