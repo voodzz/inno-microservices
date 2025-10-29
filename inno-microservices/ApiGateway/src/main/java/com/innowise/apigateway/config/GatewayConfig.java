@@ -58,15 +58,11 @@ public class GatewayConfig {
                 r.path("/api/v1/cards/**")
                     .filters(f -> f.filter(filter.apply(new JwtAuthFilter.Config())))
                     .uri(userServiceUrl))
-        .route("auth-service-login", r -> r.path("/api/v1/auth/login/**").uri(authServiceUrl))
         .route(
             "auth-service",
             r ->
                 r.path("/api/v1/auth/**")
-                    .and()
-                    .not(p -> p.path("/api/v1/auth/register/**"))
-                    .and()
-                    .not(p -> p.path("/api/v1/auth/login/**"))
+                    .filters(f -> f.filter(filter.apply(new JwtAuthFilter.Config())))
                     .uri(authServiceUrl))
         .route(
             "order-service",
