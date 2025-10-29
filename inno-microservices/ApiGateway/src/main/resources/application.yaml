@@ -11,12 +11,12 @@ security:
 
 user:
   service:
-    uri: ${USER_SERVICE_URI:http://localhost:8080}
+    url: ${USER_SERVICE_URI:http://localhost:8080}
 
 auth:
   service:
-    uri: ${AUTH_SERVICE_URI:http://localhost:8081}
+    url: ${AUTH_SERVICE_URI:http://localhost:8081}
 
 order:
   service:
-    uri: ${ORDER_SERVICE_URI:http://localhost:8082}
+    url: ${ORDER_SERVICE_URI:http://localhost:8082}
