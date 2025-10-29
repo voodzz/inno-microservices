@@ -6,6 +6,10 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for the Spring Cloud Gateway. It defines the routing rules for various
+ * microservices and applies the JWT authentication filter to protected routes.
+ */
 @Configuration
 public class GatewayConfig {
   private final JwtAuthFilter filter;
@@ -13,6 +17,14 @@ public class GatewayConfig {
   private final String authServiceUrl;
   private final String orderServiceUrl;
 
+  /**
+   * Constructs the GatewayConfig with required dependencies and service URLs.
+   *
+   * @param filter The JWT authentication filter to apply to protected routes.
+   * @param userServiceUrl The base URL of the User Service.
+   * @param authServiceUrl The base URL of the Auth Service.
+   * @param orderServiceUrl The base URL of the Order Service.
+   */
   public GatewayConfig(
       JwtAuthFilter filter,
       @Value("${user.service.url}") String userServiceUrl,
@@ -24,6 +36,12 @@ public class GatewayConfig {
     this.orderServiceUrl = orderServiceUrl;
   }
 
+  /**
+   * Defines the gateway routes using a RouteLocatorBuilder.
+   *
+   * @param builder The RouteLocatorBuilder provided by Spring Cloud Gateway.
+   * @return A RouteLocator containing all defined routes.
+   */
   @Bean
   public RouteLocator routeLocator(RouteLocatorBuilder builder) {
     return builder

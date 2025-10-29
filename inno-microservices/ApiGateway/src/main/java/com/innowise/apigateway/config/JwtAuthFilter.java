@@ -14,6 +14,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * A custom Spring Cloud Gateway filter factory for JWT authentication. It validates the JWT token
+ * in the Authorization header for protected endpoints. Open endpoints (login, register) are
+ * excluded from the filter.
+ */
 @Component
 public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Config> {
   private static final String BEARER = "Bearer ";
@@ -23,12 +28,25 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
   private static final List<String> openEndpoints =
       List.of("/api/v1/auth/login", "/api/v1/auth/register");
 
+  /**
+   * Constructs the JwtAuthFilter.
+   *
+   * @param jwtService Service to handle JWT token validation logic.
+   */
   @Autowired
   public JwtAuthFilter(JwtService jwtService) {
     super(Config.class);
     this.jwtService = jwtService;
   }
 
+  /**
+   * Applies the JWT authentication logic to the gateway exchange. Checks if the path is open, then
+   * validates the 'Bearer' token in the header. Responds with 401 Unauthorized for missing or
+   * invalid tokens.
+   *
+   * @param config The configuration object for this filter (currently unused).
+   * @return The GatewayFilter logic to execute.
+   */
   @Override
   public GatewayFilter apply(Config config) {
     return (exchange, chain) -> {
@@ -55,10 +73,25 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     };
   }
 
+  /**
+   * Checks if the given request path is an open endpoint that does not require JWT authentication.
+   * The list of open endpoints is predefined.
+   *
+   * @param path The URI path of the incoming request.
+   * @return {@code true} if the path is an open endpoint, {@code false} otherwise.
+   */
   private boolean isOpenPath(String path) {
     return openEndpoints.stream().anyMatch(path::startsWith);
   }
 
+  /**
+   * Creates a reactive response with HTTP 401 Unauthorized status and a JSON body containing an
+   * error message. Used when authentication fails.
+   *
+   * @param exchange The current server web exchange.
+   * @param message The specific error message to include in the response body.
+   * @return A {@code Mono<Void>} that completes when the response is written.
+   */
   private Mono<Void> handleUnauthorized(ServerWebExchange exchange, String message) {
     ServerHttpResponse response = exchange.getResponse();
     response.setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -68,5 +101,9 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     return response.writeWith(Mono.just(response.bufferFactory().wrap(body.getBytes())));
   }
 
+  /**
+   * Inner class for filter configuration (required by AbstractGatewayFilterFactory). This class is
+   * empty as the filter doesn't require specific runtime properties.
+   */
   public static class Config {}
 }
