@@ -29,6 +29,10 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+  private static final String ERROR = "Error";
+  private static final String CAUSE = "Cause";
+  private static final String MESSAGE = "Message";
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleGeneralException(Exception ex) {
     return ResponseEntity.internalServerError().body(ex.getMessage());
@@ -60,9 +64,13 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(TransactionFailedException.class)
-  public Mono<ResponseEntity<Map<String, String>>> handleTransactionFailedException(
+  public ResponseEntity<Map<String, String>> handleTransactionFailedException(
       TransactionFailedException ex) {
-    Map<String, String> body = Map.of("error", "Registration failed", "message", ex.getMessage());
-    return Mono.just(ResponseEntity.internalServerError().body(body));
+    Map<String, String> body =
+        Map.of(
+            ERROR, "Registration failed",
+            CAUSE, ex.getCause().getMessage(),
+            MESSAGE, ex.getMessage());
+    return ResponseEntity.internalServerError().body(body);
   }
 }
