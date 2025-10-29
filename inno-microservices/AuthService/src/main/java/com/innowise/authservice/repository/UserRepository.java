@@ -2,6 +2,7 @@ package com.innowise.authservice.repository;
 
 import com.innowise.authservice.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,4 +37,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
    * @return {@code true} if a user with the given username exists; {@code false} otherwise
    */
   boolean existsByUsername(String username);
+
+  /**
+   * Deletes a user by its username
+   *
+   * @param username the username of the user to delete
+   */
+  @Modifying
+  @Query("DELETE FROM User u WHERE u.username = :username")
+  void deleteByUsername(String username);
 }
