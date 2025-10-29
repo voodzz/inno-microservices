@@ -1,19 +1,27 @@
 package com.innowise.authservice.service;
 
 import com.innowise.authservice.exception.AlreadyExistsException;
+import com.innowise.authservice.exception.TransactionFailedException;
 import com.innowise.authservice.model.RoleEnum;
 import com.innowise.authservice.model.dto.AuthRequest;
 import com.innowise.authservice.model.dto.AuthResponse;
+import com.innowise.authservice.model.dto.RegistrationRequest;
+import com.innowise.authservice.model.dto.UserServiceDto;
 import com.innowise.authservice.model.entity.RefreshToken;
 import com.innowise.authservice.model.entity.Role;
 import com.innowise.authservice.model.entity.User;
 import com.innowise.authservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
 
@@ -25,31 +33,18 @@ import java.util.HashSet;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+  private final WebClient webClient = WebClient.builder().build();
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final RefreshTokenService refreshTokenService;
   private final JwtService jwtService;
 
-  /**
-   * Registers a new user with an encoded password and a default {@code USER} role.
-   *
-   * @param request the registration request containing username and password
-   * @return the newly created {@link User}
-   * @throws AlreadyExistsException if a user with the same username already exists
-   */
-  public User register(AuthRequest request) {
-    if (userRepository.existsByUsername(request.username())) {
-      throw new AlreadyExistsException("User '%s' already exisits".formatted(request.username()));
-    }
+  @Value("${user.service.url}")
+  private String userServiceUrl;
 
-    User user =
-        new User(
-            null, request.username(), passwordEncoder.encode(request.password()), new HashSet<>());
-    user.getRoles().add(new Role(null, RoleEnum.ROLE_USER, user));
-
-    return userRepository.save(user);
-  }
+  @Value("${security.jwt.secret-key}")
+  private String internalSecret;
 
   /**
    * Authenticates a user and generates new access and refresh tokens.
@@ -85,5 +80,94 @@ public class AuthService {
     refreshToken = refreshTokenService.createRefreshToken(user);
 
     return new AuthResponse(accessToken, refreshToken.getToken());
+  }
+
+  /**
+   * Registers a new user.
+   *
+   * <p>Saves credentials in AuthService and user data in UserService. Includes a rollback mechanism
+   * for AuthService on UserService failure.
+   *
+   * @param request the registration request
+   * @throws TransactionFailedException if the UserService call fails
+   * @throws AlreadyExistsException if the user already exists in AuthService
+   */
+  public void register(RegistrationRequest request) {
+    AuthRequest authServiceRequest = new AuthRequest(request.email(), request.password());
+    registerInAuthService(authServiceRequest);
+
+    UserServiceDto userServiceRequest =
+        UserServiceDto.builder()
+            .id(null)
+            .name(request.name())
+            .surname(request.surname())
+            .birthDate(request.birthDate())
+            .email(request.email())
+            .cards(request.cards())
+            .build();
+    try {
+      createUserInUserService(userServiceRequest);
+    } catch (TransactionFailedException ex) {
+      rollbackAuthService(authServiceRequest.username());
+    }
+  }
+
+  /**
+   * Registers a new user with an encoded password and a default {@code USER} role.
+   *
+   * @param request the registration request containing username and password
+   * @return the newly created {@link User}
+   * @throws AlreadyExistsException if a user with the same username already exists
+   */
+  private void registerInAuthService(AuthRequest request) {
+    if (userRepository.existsByUsername(request.username())) {
+      throw new AlreadyExistsException("User '%s' already exisits".formatted(request.username()));
+    }
+
+    User user =
+        new User(
+            null, request.username(), passwordEncoder.encode(request.password()), new HashSet<>());
+    user.getRoles().add(new Role(null, RoleEnum.ROLE_USER, user));
+
+    userRepository.save(user);
+  }
+
+  /**
+   * Communicates with the User Service to create the new user record. This is the first step of the
+   * distributed transaction.
+   *
+   * @param request The DTO containing the user data for the User Service.
+   * @throws TransactionFailedException if the User Service call fails.
+   */
+  private void createUserInUserService(UserServiceDto request) {
+    try {
+      webClient
+          .post()
+          .uri(userServiceUrl + "/api/v1/users")
+          .header("X-Internal-Secret", internalSecret)
+          .contentType(MediaType.APPLICATION_JSON)
+          .bodyValue(request)
+          .retrieve()
+          .onStatus(
+              HttpStatusCode::isError,
+              r ->
+                  Mono.error(
+                      new TransactionFailedException(
+                          "UserService transaction failed with status code " + r.statusCode())))
+          .bodyToMono(UserServiceDto.class)
+          .block();
+    } catch (RuntimeException ex) {
+      throw new TransactionFailedException("Failed to create user in UserService", ex);
+    }
+  }
+
+  /**
+   * Executes rollback for distributed registration transaction by deleting the user with the
+   * provided username
+   *
+   * @param username the username of the user to delete
+   */
+  private void rollbackAuthService(String username) {
+    userRepository.deleteByUsername(username);
   }
 }
