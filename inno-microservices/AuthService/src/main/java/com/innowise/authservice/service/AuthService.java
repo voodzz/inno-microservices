@@ -20,6 +20,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -39,6 +41,7 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final RefreshTokenService refreshTokenService;
   private final JwtService jwtService;
+  private final RollbackService rollbackService;
 
   @Value("${user.service.url}")
   private String userServiceUrl;
@@ -108,7 +111,8 @@ public class AuthService {
     try {
       createUserInUserService(userServiceRequest);
     } catch (TransactionFailedException ex) {
-      rollbackAuthService(authServiceRequest.username());
+      rollbackService.rollbackAuthUserCreation(authServiceRequest.username());
+      throw ex;
     }
   }
 
@@ -116,7 +120,6 @@ public class AuthService {
    * Registers a new user with an encoded password and a default {@code USER} role.
    *
    * @param request the registration request containing username and password
-   * @return the newly created {@link User}
    * @throws AlreadyExistsException if a user with the same username already exists
    */
   private void registerInAuthService(AuthRequest request) {
@@ -159,15 +162,5 @@ public class AuthService {
     } catch (RuntimeException ex) {
       throw new TransactionFailedException("Failed to create user in UserService", ex);
     }
-  }
-
-  /**
-   * Executes rollback for distributed registration transaction by deleting the user with the
-   * provided username
-   *
-   * @param username the username of the user to delete
-   */
-  private void rollbackAuthService(String username) {
-    userRepository.deleteByUsername(username);
   }
 }
