@@ -16,14 +16,17 @@ public class RegistrationService {
   private final WebClient webClient;
   private final String userServiceUrl;
   private final String authServiceUrl;
+  private final String internalSecret;
 
   public RegistrationService(
       WebClient.Builder webClientBuilder,
-      @Value("${user.service.uri}") String userServiceUrl,
-      @Value("${auth.service.uri}") String authServiceUrl) {
+      @Value("${user.service.url}") String userServiceUrl,
+      @Value("${auth.service.url}") String authServiceUrl,
+      @Value("${security.jwt.secret-key}") String internalSecret) {
     this.webClient = webClientBuilder.build();
     this.userServiceUrl = userServiceUrl;
     this.authServiceUrl = authServiceUrl;
+    this.internalSecret = internalSecret;
   }
 
   public Mono<AuthResponse> registerUser(UserDto request) {
@@ -41,7 +44,7 @@ public class RegistrationService {
             response ->
                 webClient
                     .post()
-                    .uri(authServiceUrl + "/api/v1/auth")
+                    .uri(authServiceUrl + "/api/v1/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(authRequest)
                     .retrieve()
@@ -59,16 +62,23 @@ public class RegistrationService {
     return webClient
         .post()
         .uri(userServiceUrl + "/api/v1/users")
+        .header("X-Internal-Secret", internalSecret)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(request)
         .retrieve()
-        .bodyToMono(UserServiceDto.class);
+        .bodyToMono(UserServiceDto.class)
+        .onErrorResume(
+            error ->
+                Mono.error(
+                    new TransactionFailedException(
+                        "Failed to create user in UserService: " + error.getMessage())));
   }
 
   private Mono<Void> rollbackUserService(Long id) {
     return webClient
         .delete()
-        .uri(userServiceUrl + "/api/v1/delete/" + id)
+        .uri(userServiceUrl + "/api/v1/users/" + id)
+        .header("X-Internal-Secret", internalSecret)
         .retrieve()
         .toBodilessEntity()
         .then();
