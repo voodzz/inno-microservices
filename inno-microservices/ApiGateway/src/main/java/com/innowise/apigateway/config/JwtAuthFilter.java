@@ -4,6 +4,7 @@ import com.innowise.apigateway.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -15,6 +16,8 @@ import java.util.List;
 
 @Component
 public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Config> {
+  private static final String BEARER = "Bearer ";
+  private static final Integer TOKEN_START_INDEX = 7;
   private final JwtService jwtService;
 
   private static final List<String> openEndpoints =
@@ -31,30 +34,24 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     return (exchange, chain) -> {
       ServerHttpRequest request = exchange.getRequest();
       String path = request.getURI().getPath();
+
       if (isOpenPath(path)) {
         return chain.filter(exchange);
       }
 
-      String header = request.getHeaders().getFirst("Authorization");
+      String header = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-      if (header == null || !header.startsWith("Bearer ")) {
+      if (header == null || !header.startsWith(BEARER)) {
         return handleUnauthorized(exchange, "Missing or invalid authorization header.");
       }
 
-      try {
-        String token = header.substring(7);
+      String token = header.substring(TOKEN_START_INDEX);
 
-        if (!jwtService.isTokenValid(token)) {
-          return handleUnauthorized(exchange, "Invalid token.");
-        }
-
-        String username = jwtService.extractUsername(token);
-        ServerHttpRequest modifiedRequest =
-            request.mutate().header("X-User-Name", username).build();
-        return chain.filter(exchange.mutate().request(modifiedRequest).build());
-      } catch (Exception e) {
-        return handleUnauthorized(exchange, "Token validation failed: " + e.getMessage());
+      if (!jwtService.isTokenValid(token)) {
+        return handleUnauthorized(exchange, "Invalid token.");
       }
+
+      return chain.filter(exchange);
     };
   }
 
@@ -65,7 +62,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
   private Mono<Void> handleUnauthorized(ServerWebExchange exchange, String message) {
     ServerHttpResponse response = exchange.getResponse();
     response.setStatusCode(HttpStatus.UNAUTHORIZED);
-    response.getHeaders().add("Content-Type", "application/json");
+    response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
 
     String body = String.format("{\"error\": \"Unauthorized\", \"message\": \"%s\"}", message);
     return response.writeWith(Mono.just(response.bufferFactory().wrap(body.getBytes())));
