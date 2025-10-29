@@ -1,5 +1,5 @@
 server:
-  port: 8085
+  port: 8080
 
 spring:
   application:
@@ -11,12 +11,12 @@ security:
 
 user:
   service:
-    url: ${USER_SERVICE_URI:http://localhost:8080}
+    url: ${USER_SERVICE_URL:http://localhost:8081}
 
 auth:
   service:
-    url: ${AUTH_SERVICE_URI:http://localhost:8081}
+    url: ${AUTH_SERVICE_URL:http://localhost:8082}
 
 order:
   service:
-    url: ${ORDER_SERVICE_URI:http://localhost:8082}
+    url: ${ORDER_SERVICE_URL:http://localhost:8083}
