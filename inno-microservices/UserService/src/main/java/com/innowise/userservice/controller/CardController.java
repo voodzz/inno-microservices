@@ -39,7 +39,7 @@ public class CardController {
    *     (Created)
    */
   @PostMapping
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
   public ResponseEntity<CardDto> createCard(@Valid @RequestBody CardDto request) {
     CardDto response = service.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -52,7 +52,7 @@ public class CardController {
    * @return a {@link ResponseEntity} containing the {@link CardDto} and HTTP status 200 (OK)
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SERVICE')")
   public ResponseEntity<CardDto> findById(@PathVariable Long id) {
     CardDto response = service.findById(id);
     return ResponseEntity.ok(response);
@@ -66,7 +66,7 @@ public class CardController {
    *     200 (OK), or HTTP status 204 (No Content) if no cards are found
    */
   @GetMapping
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
   public ResponseEntity<List<CardDto>> findAll(@RequestParam(required = false) List<Long> ids) {
     List<CardDto> cards;
     if (ids == null) {
@@ -88,7 +88,7 @@ public class CardController {
    * @return a {@link ResponseEntity} with HTTP status 200 (OK) if updated successfully
    */
   @PutMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SERVICE')")
   public ResponseEntity<Void> updateCard(
       @PathVariable Long id, @Valid @RequestBody CardDto request) {
     service.update(id, request);
@@ -102,7 +102,7 @@ public class CardController {
    * @return a {@link ResponseEntity} with HTTP status 204 (No Content) if deleted successfully
    */
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SERVICE')")
   public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
     service.delete(id);
     return ResponseEntity.noContent().build();

@@ -40,7 +40,7 @@ public class UserController {
    *     (Created)
    */
   @PostMapping
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
   public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto request) {
     UserDto response = service.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -53,7 +53,7 @@ public class UserController {
    * @return a {@link ResponseEntity} containing the {@link UserDto} and HTTP status 200 (OK)
    */
   @GetMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SERVICE')")
   public ResponseEntity<UserDto> findById(@PathVariable Long id) {
     UserDto response = service.findById(id);
     return ResponseEntity.ok(response);
@@ -77,7 +77,7 @@ public class UserController {
    *     (OK), or 204 (No Content) if no users are found
    */
   @GetMapping
-  @PreAuthorize("hasRole('ADMIN') or hasRole('SERVICE')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
   public ResponseEntity<List<UserDto>> findBy(
       @RequestParam(required = false) String filter,
       @RequestParam(required = false) List<Long> ids,
@@ -124,7 +124,7 @@ public class UserController {
    * @return a {@link ResponseEntity} with HTTP status 200 (OK) if updated successfully
    */
   @PutMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SERVICE')")
   public ResponseEntity<Void> updateUser(
       @PathVariable Long id, @Valid @RequestBody UserDto request) {
     service.update(id, request);
@@ -138,7 +138,7 @@ public class UserController {
    * @return a {@link ResponseEntity} with HTTP status 204 (No Content) if deleted successfully
    */
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+  @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SERVICE')")
   public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
     service.delete(id);
     return ResponseEntity.noContent().build();
