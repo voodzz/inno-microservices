@@ -29,5 +29,5 @@ import jakarta.validation.constraints.NotBlank;
  * @param password the password supplied by the client; must not be blank
  */
 public record AuthRequest(
-        @NotBlank(message = "Username must not be blank") String username,
-        @NotBlank(message = "Password must not be blank") String password) {}
+    @NotBlank(message = "Username must not be blank") String username,
+    @NotBlank(message = "Password must not be blank") String password) {}

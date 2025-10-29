@@ -19,8 +19,8 @@ import java.time.LocalDate;
  * @param expirationDate the card expiration date (must be in the future)
  */
 public record CardDto(
-        Long id,
-        @NotNull(message = "userId must have value") Long userId,
-        @NotBlank(message = "number must have value") String number,
-        @NotBlank(message = "holder must have value") String holder,
-        @Future(message = "expirationDate must be in the future") LocalDate expirationDate) {}
+    Long id,
+    @NotNull(message = "userId must have value") Long userId,
+    @NotBlank(message = "number must have value") String number,
+    @NotBlank(message = "holder must have value") String holder,
+    @Future(message = "expirationDate must be in the future") LocalDate expirationDate) {}

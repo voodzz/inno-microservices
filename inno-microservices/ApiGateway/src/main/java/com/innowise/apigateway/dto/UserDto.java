@@ -9,9 +9,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record UserDto(
-        @NotBlank String name,
-        @NotBlank String surname,
-        @Past LocalDate birthDate,
-        @Email @NotBlank String email,
-        @NotBlank String password,
-        @NotNull List<CardDto> cards) {}
+    @NotBlank String name,
+    @NotBlank String surname,
+    @Past LocalDate birthDate,
+    @Email @NotBlank String email,
+    @NotBlank String password,
+    @NotNull List<CardDto> cards) {}

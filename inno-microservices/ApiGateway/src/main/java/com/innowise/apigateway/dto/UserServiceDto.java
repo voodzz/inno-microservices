@@ -8,10 +8,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record UserServiceDto(
-        Long id,
-        @NotBlank String name,
-        @NotBlank String surname,
-        @Past LocalDate birthDate,
-        @Email @NotBlank String email,
-        List<CardDto> cards
-) {}
+    Long id,
+    @NotBlank String name,
+    @NotBlank String surname,
+    @Past LocalDate birthDate,
+    @Email @NotBlank String email,
+    List<CardDto> cards) {}

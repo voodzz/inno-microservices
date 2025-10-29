@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotBlank;
  * <p>The record contains:
  *
  * <ul>
- *   <li>{@code accessToken} — the short-lived access token to be used in the {@code
- *       Authorization} header on subsequent requests.
+ *   <li>{@code accessToken} — the short-lived access token to be used in the {@code Authorization}
+ *       header on subsequent requests.
  *   <li>{@code refreshToken} — a longer-lived token used to obtain new access tokens.
  *   <li>{@code type} — the token type prefix typically used in the {@code Authorization} header
  *       (for example, {@code "Bearer"}).
@@ -36,10 +36,10 @@ import jakarta.validation.constraints.NotBlank;
  * @param type the token type/prefix (for example, {@code "Bearer"}); must not be blank
  */
 public record AuthResponse(
-        @NotBlank(message = "Access token must not be blank") String accessToken,
-        @NotBlank(message = "Refresh token must not be blank") String refreshToken,
-        @NotBlank(message = "Type must not be blank") String type) {
-    public AuthResponse(String accessToken, String refreshToken) {
-        this(accessToken, refreshToken, "Bearer");
-    }
+    @NotBlank(message = "Access token must not be blank") String accessToken,
+    @NotBlank(message = "Refresh token must not be blank") String refreshToken,
+    @NotBlank(message = "Type must not be blank") String type) {
+  public AuthResponse(String accessToken, String refreshToken) {
+    this(accessToken, refreshToken, "Bearer");
+  }
 }
