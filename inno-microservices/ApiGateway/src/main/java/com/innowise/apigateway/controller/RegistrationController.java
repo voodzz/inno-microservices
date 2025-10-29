@@ -27,7 +27,7 @@ public class RegistrationController {
    *     successful registration and authentication.
    */
   @PostMapping("/api/v1/auth/register")
-  public Mono<ResponseEntity<AuthResponse>> register(@RequestBody RegistrationRequest request) {
-    return registrationService.registerUser(request).map(ResponseEntity::ok);
+  public Mono<ResponseEntity<Void>> register(@RequestBody RegistrationRequest request) {
+    return registrationService.registerUser(request).thenReturn(ResponseEntity.ok().build());
   }
 }

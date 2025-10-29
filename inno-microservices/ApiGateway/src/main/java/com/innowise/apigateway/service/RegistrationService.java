@@ -13,8 +13,8 @@ import reactor.core.publisher.Mono;
 
 /**
  * Service class responsible for coordinating the registration of a new user across multiple
- * microservices (User Service and Auth Service) in a transactional manner.
- * It uses {@link WebClient} for non-blocking communication.
+ * microservices (User Service and Auth Service) in a transactional manner. It uses {@link
+ * WebClient} for non-blocking communication.
  */
 @Service
 public class RegistrationService {
@@ -44,14 +44,13 @@ public class RegistrationService {
 
   /**
    * Registers a new user by calling the User Service, then the Auth Service. If the Auth Service
-   * call fails, it attempts to roll back the user creation in the User Service and throws a
-   * {@link TransactionFailedException}.
+   * call fails, it attempts to roll back the user creation in the User Service and throws a {@link TransactionFailedException}.
    *
    * @param request The {@link RegistrationRequest} DTO.
    * @return A Mono emitting the {@link AuthResponse} containing the JWT token.
    * @throws TransactionFailedException if any microservice call fails, leading to a rollback.
    */
-  public Mono<AuthResponse> registerUser(RegistrationRequest request) {
+  public Mono<Void> registerUser(RegistrationRequest request) {
     UserServiceResponse userServiceRequest =
         new UserServiceResponse(
             null,
@@ -70,7 +69,7 @@ public class RegistrationService {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(authRequest)
                     .retrieve()
-                    .bodyToMono(AuthResponse.class)
+                    .bodyToMono(Void.class)
                     .onErrorResume(
                         error ->
                             rollbackUserService(response.id())
@@ -81,8 +80,8 @@ public class RegistrationService {
   }
 
   /**
-   * Communicates with the User Service to create the new user record.
-   * This is the first step of the distributed transaction.
+   * Communicates with the User Service to create the new user record. This is the first step of the
+   * distributed transaction.
    *
    * @param request The DTO containing the user data for the User Service.
    * @return A Mono emitting the {@link UserServiceResponse} with the created user's data.
@@ -105,8 +104,8 @@ public class RegistrationService {
   }
 
   /**
-   * Executes the rollback by sending a DELETE request to the User Service to remove the created user.
-   * This is called if a subsequent service (like Auth Service) fails.
+   * Executes the rollback by sending a DELETE request to the User Service to remove the created
+   * user. This is called if a subsequent service (like Auth Service) fails.
    *
    * @param id The ID of the user to delete/rollback.
    * @return A {@code Mono<Void>} that completes after the rollback attempt.
