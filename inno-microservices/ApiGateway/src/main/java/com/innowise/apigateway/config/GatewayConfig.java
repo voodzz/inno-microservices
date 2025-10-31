@@ -1,5 +1,6 @@
 package com.innowise.apigateway.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
@@ -11,30 +12,18 @@ import org.springframework.context.annotation.Configuration;
  * microservices and applies the JWT authentication filter to protected routes.
  */
 @Configuration
+@RequiredArgsConstructor
 public class GatewayConfig {
   private final JwtAuthFilter filter;
-  private final String userServiceUrl;
-  private final String authServiceUrl;
-  private final String orderServiceUrl;
 
-  /**
-   * Constructs the GatewayConfig with required dependencies and service URLs.
-   *
-   * @param filter The JWT authentication filter to apply to protected routes.
-   * @param userServiceUrl The base URL of the User Service.
-   * @param authServiceUrl The base URL of the Auth Service.
-   * @param orderServiceUrl The base URL of the Order Service.
-   */
-  public GatewayConfig(
-      JwtAuthFilter filter,
-      @Value("${user.service.url}") String userServiceUrl,
-      @Value("${auth.service.url}") String authServiceUrl,
-      @Value("${order.service.url}") String orderServiceUrl) {
-    this.filter = filter;
-    this.userServiceUrl = userServiceUrl;
-    this.authServiceUrl = authServiceUrl;
-    this.orderServiceUrl = orderServiceUrl;
-  }
+  @Value("${user.service.url}")
+  private String userServiceUrl;
+
+  @Value("${auth.service.url}")
+  private String authServiceUrl;
+
+  @Value("${order.service.url}")
+  private String orderServiceUrl;
 
   /**
    * Defines the gateway routes using a RouteLocatorBuilder.
