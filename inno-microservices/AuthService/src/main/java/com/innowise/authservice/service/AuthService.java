@@ -20,7 +20,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -41,7 +40,6 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final RefreshTokenService refreshTokenService;
   private final JwtService jwtService;
-  private final RollbackService rollbackService;
 
   @Value("${user.service.url}")
   private String userServiceUrl;
@@ -89,16 +87,14 @@ public class AuthService {
    * Registers a new user.
    *
    * <p>Saves credentials in AuthService and user data in UserService. Includes a rollback mechanism
-   * for AuthService on UserService failure.
+   * for UserService on AuthService failure.
    *
    * @param request the registration request
-   * @throws TransactionFailedException if the UserService call fails
+   * @throws TransactionFailedException if the AuthService or UserService fails
    * @throws AlreadyExistsException if the user already exists in AuthService
    */
+  @Transactional
   public void register(RegistrationRequest request) {
-    AuthRequest authServiceRequest = new AuthRequest(request.email(), request.password());
-    registerInAuthService(authServiceRequest);
-
     UserServiceDto userServiceRequest =
         UserServiceDto.builder()
             .id(null)
@@ -108,28 +104,30 @@ public class AuthService {
             .email(request.email())
             .cards(request.cards())
             .build();
+    UserServiceDto createdUser = createUserInUserService(userServiceRequest);
+
     try {
-      createUserInUserService(userServiceRequest);
-    } catch (TransactionFailedException ex) {
-      rollbackService.rollbackAuthUserCreation(authServiceRequest.username());
-      throw ex;
+      registerInAuthService(createdUser.id(), createdUser.email(), request.password());
+    } catch (RuntimeException ex) {
+      rollbackUserInUserService(createdUser.id());
+      throw new TransactionFailedException("UserService rolled back", ex);
     }
   }
 
   /**
    * Registers a new user with an encoded password and a default {@code USER} role.
    *
-   * @param request the registration request containing username and password
+   * @param id the ID of the user
+   * @param username the username of the user
+   * @param password the password of the user
    * @throws AlreadyExistsException if a user with the same username already exists
    */
-  private void registerInAuthService(AuthRequest request) {
-    if (userRepository.existsByUsername(request.username())) {
-      throw new AlreadyExistsException("User '%s' already exisits".formatted(request.username()));
+  private void registerInAuthService(Long id, String username, String password) {
+    if (userRepository.existsByUsername(username)) {
+      throw new AlreadyExistsException("User '%s' already exisits".formatted(username));
     }
 
-    User user =
-        new User(
-            null, request.username(), passwordEncoder.encode(request.password()), new HashSet<>());
+    User user = new User(id, username, passwordEncoder.encode(password), new HashSet<>());
     user.getRoles().add(new Role(null, RoleEnum.ROLE_USER, user));
 
     userRepository.save(user);
@@ -142,25 +140,45 @@ public class AuthService {
    * @param request The DTO containing the user data for the User Service.
    * @throws TransactionFailedException if the User Service call fails.
    */
-  private void createUserInUserService(UserServiceDto request) {
-    try {
-      webClient
-          .post()
-          .uri(userServiceUrl + "/api/v1/users")
-          .header("X-Internal-Secret", internalSecret)
-          .contentType(MediaType.APPLICATION_JSON)
-          .bodyValue(request)
-          .retrieve()
-          .onStatus(
-              HttpStatusCode::isError,
-              r ->
-                  Mono.error(
-                      new TransactionFailedException(
-                          "UserService transaction failed with status code " + r.statusCode())))
-          .bodyToMono(UserServiceDto.class)
-          .block();
-    } catch (RuntimeException ex) {
-      throw new TransactionFailedException("Failed to create user in UserService", ex);
-    }
+  private UserServiceDto createUserInUserService(UserServiceDto request) {
+    return webClient
+        .post()
+        .uri(userServiceUrl + "/api/v1/users")
+        .header("X-Internal-Secret", internalSecret)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(request)
+        .retrieve()
+        .onStatus(
+            HttpStatusCode::isError,
+            r ->
+                Mono.error(
+                    new TransactionFailedException(
+                        "Creation of user in UserService failed with status code "
+                            + r.statusCode())))
+        .bodyToMono(UserServiceDto.class)
+        .block();
+  }
+
+  /**
+   * Rolls back the user created in the multiservice registration transaction in case the
+   * transaction fails.
+   *
+   * @param id the ID of the user to delete
+   */
+  private void rollbackUserInUserService(Long id) {
+    webClient
+        .delete()
+        .uri(userServiceUrl + "/api/v1/users/" + id)
+        .header("X-Internal-Secret", internalSecret)
+        .retrieve()
+        .onStatus(
+            HttpStatusCode::isError,
+            r ->
+                Mono.error(
+                    new TransactionFailedException(
+                        "Rollback failed for user ID %d in UserService with status code %s"
+                            .formatted(id, r.statusCode()))))
+        .toBodilessEntity()
+        .block();
   }
 }
