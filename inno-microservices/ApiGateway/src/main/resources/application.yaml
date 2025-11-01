@@ -7,10 +7,8 @@ spring:
 
 security:
   jwt:
-    secret-key: ${JWT_SECRET_KEY}
-  open-endpoints:
-    - /api/v1/auth/login
-    - /api/v1/auth/register
+    secret-key: ${JWT_SECRET_KEY:c528ba3b9bf887b6367e34761df7e6f1847cadf5a7b3e8820eac53ac96eca997}
+  open-endpoints: /api/v1/auth/login, /api/v1/auth/register
 
 user:
   service:
