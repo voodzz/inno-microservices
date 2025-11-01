@@ -1,7 +1,8 @@
 package com.innowise.apigateway.config;
 
 import com.innowise.apigateway.service.JwtService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -20,24 +21,14 @@ import java.util.List;
  * excluded from the filter.
  */
 @Component
+@RequiredArgsConstructor
 public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Config> {
   private static final String BEARER = "Bearer ";
   private static final Integer TOKEN_START_INDEX = 7;
   private final JwtService jwtService;
 
-  private static final List<String> openEndpoints =
-      List.of("/api/v1/auth/login", "/api/v1/auth/register");
-
-  /**
-   * Constructs the JwtAuthFilter.
-   *
-   * @param jwtService Service to handle JWT token validation logic.
-   */
-  @Autowired
-  public JwtAuthFilter(JwtService jwtService) {
-    super(Config.class);
-    this.jwtService = jwtService;
-  }
+  @Value("${security.open-endpoints}")
+  private static List<String> openEndpoints;
 
   /**
    * Applies the JWT authentication logic to the gateway exchange. Checks if the path is open, then
