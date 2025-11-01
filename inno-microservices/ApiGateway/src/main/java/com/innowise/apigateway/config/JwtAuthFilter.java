@@ -28,7 +28,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
   private final JwtService jwtService;
 
   @Value("${security.open-endpoints}")
-  private static List<String> openEndpoints;
+  private List<String> openEndpoints;
 
   /**
    * Applies the JWT authentication logic to the gateway exchange. Checks if the path is open, then
