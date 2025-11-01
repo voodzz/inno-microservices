@@ -86,8 +86,8 @@ public class AuthService {
   /**
    * Registers a new user.
    *
-   * <p>Saves credentials in AuthService and user data in UserService. Includes a rollback mechanism
-   * for UserService on AuthService failure.
+   * <p>Saves credentials in AuthService and user data in UserService. Roolls back
+   * AuthService on UserService failure.
    *
    * @param request the registration request
    * @throws TransactionFailedException if the AuthService or UserService fails
@@ -127,7 +127,7 @@ public class AuthService {
   }
 
   /**
-   * Communicates with the User Service to create the new user record. This is the first step of the
+   * Communicates with the User Service to create the new user record. This is the second step of the
    * distributed transaction.
    *
    * @param request The DTO containing the user data for the User Service.
