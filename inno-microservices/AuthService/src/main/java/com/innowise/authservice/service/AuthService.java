@@ -86,7 +86,7 @@ public class AuthService {
   /**
    * Registers a new user.
    *
-   * <p>Saves credentials in AuthService and user data in UserService. Roolls back
+   * <p>Saves credentials in AuthService and user data in UserService. Rolls back
    * AuthService on UserService failure.
    *
    * @param request the registration request

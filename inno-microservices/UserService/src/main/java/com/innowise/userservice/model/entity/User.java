@@ -36,8 +36,7 @@ import java.util.List;
 public class User {
 
   /**
-   * The unique identifier of the user. Generated automatically by the database using identity
-   * strategy.
+   * The unique identifier of the user.
    */
   @Id
   private Long id;
