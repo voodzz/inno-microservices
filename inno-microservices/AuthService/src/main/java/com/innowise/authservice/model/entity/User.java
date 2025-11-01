@@ -42,6 +42,7 @@ public class User implements UserDetails {
   @Serial private static final long serialVersionUID = -4991433555546991558L;
 
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(nullable = false, unique = true, length = 128)

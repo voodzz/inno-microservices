@@ -40,7 +40,6 @@ public class User {
    * strategy.
    */
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The user's first name. Cannot be {@code null}. */
