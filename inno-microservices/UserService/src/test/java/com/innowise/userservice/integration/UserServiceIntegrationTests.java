@@ -45,7 +45,7 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void create_ShouldPersistUserAndPutToCache() {
     UserDto request =
-        new UserDto(null, "John", "Doe", LocalDate.of(1990, 1, 1), USER_EMAIL, List.of());
+        new UserDto(1L, "John", "Doe", LocalDate.of(1990, 1, 1), USER_EMAIL, List.of());
 
     UserDto created = userService.create(request);
 
@@ -67,6 +67,7 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void create_DuplicateEmail_ShouldThrowAlreadyExists() {
     User existing = new User();
+    existing.setId(1L);
     existing.setName("Existing");
     existing.setSurname("User");
     existing.setEmail(USER_EMAIL);
@@ -74,7 +75,7 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
     userRepository.save(existing);
 
     UserDto request =
-        new UserDto(null, "John", "Doe", LocalDate.of(1990, 1, 1), USER_EMAIL, List.of());
+        new UserDto(2L, "John", "Doe", LocalDate.of(1990, 1, 1), USER_EMAIL, List.of());
 
     assertThrows(AlreadyExistsException.class, () -> userService.create(request));
   }
@@ -82,6 +83,7 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void findById_ShouldReturnUser() {
     User user = new User();
+    user.setId(4L);
     user.setName("Alice");
     user.setSurname("Cooper");
     user.setEmail("alice@example.com");
@@ -97,6 +99,7 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void findById_Cacheable_ShouldPutToCache() {
     User user = new User();
+    user.setId(1L);
     user.setName("Cachey");
     user.setSurname("McCache");
     user.setEmail("cachey@example.com");
@@ -120,6 +123,7 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void findByEmail_ShouldReturnUserAndCacheByEmail() {
     User user = new User();
+    user.setId(1L);
     user.setName("Email");
     user.setSurname("Finder");
     user.setEmail("finder@example.com");
@@ -140,12 +144,14 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void findByIds_ShouldReturnMultiple() {
     User u1 = new User();
+    u1.setId(1L);
     u1.setName("One");
     u1.setSurname("One");
     u1.setEmail("one@example.com");
     u1.setBirthDate(LocalDate.of(1980, 1, 1));
 
     User u2 = new User();
+    u2.setId(2L);
     u2.setName("Two");
     u2.setSurname("Two");
     u2.setEmail("two@example.com");
@@ -165,12 +171,14 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void findAll_ShouldReturnAll() {
       User user1 = new User();
+      user1.setId(1L);
       user1.setName("A");
       user1.setSurname("A");
       user1.setEmail("a@example.com");
       user1.setBirthDate(LocalDate.of(1970, 1, 1));
 
       User user2 = new User();
+      user2.setId(2L);
       user2.setName("B");
       user2.setSurname("B");
       user2.setEmail("b@example.com");
@@ -187,6 +195,7 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void update_ShouldUpdateUserAndUpdateCache() {
     User user = new User();
+    user.setId(1L);
     user.setName("Before");
     user.setSurname("Update");
     user.setEmail("upd@example.com");
@@ -224,13 +233,14 @@ public class UserServiceIntegrationTests extends IntegrationTestBase {
   @Test
   void update_NonExistent_ShouldThrowNotFound() {
     UserDto req =
-        new UserDto(null, "No", "User", LocalDate.of(2000, 1, 1), "no@example.com", List.of());
+        new UserDto(1L, "No", "User", LocalDate.of(2000, 1, 1), "no@example.com", List.of());
     assertThrows(NotFoundException.class, () -> userService.update(9999L, req));
   }
 
   @Test
   void delete_ShouldRemoveUserAndEvictCache() {
     User user = new User();
+    user.setId(1L);
     user.setName("ToDelete");
     user.setSurname("User");
     user.setEmail("todel@example.com");

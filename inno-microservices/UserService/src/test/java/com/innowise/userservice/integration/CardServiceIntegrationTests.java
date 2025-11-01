@@ -38,6 +38,7 @@ public class CardServiceIntegrationTests extends IntegrationTestBase {
     cardRepository.deleteAll();
 
     testUser = new User();
+    testUser.setId(1L);
     testUser.setName("Test");
     testUser.setSurname("User");
     testUser.setEmail("user@example.com");
