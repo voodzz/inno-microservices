@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +24,15 @@ import java.util.Map;
  *   <li>{@link AlreadyExistsException} &rarr; 409 Conflict
  *   <li>{@link TokenExpiredException} &rarr; 403 Forbidden
  *   <li>{@link NotFoundException} &rarr; 404 Not Found
+ *   <li>{@link TransactionFailedException} &rarr; 505 Internal Server Error
  * </ul>
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+  private static final String ERROR = "Error";
+  private static final String CAUSE = "Cause";
+  private static final String MESSAGE = "Message";
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleGeneralException(Exception ex) {
     return ResponseEntity.internalServerError().body(ex.getMessage());
@@ -55,5 +61,16 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
     return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+  }
+
+  @ExceptionHandler(TransactionFailedException.class)
+  public ResponseEntity<Map<String, String>> handleTransactionFailedException(
+      TransactionFailedException ex) {
+    Map<String, String> body =
+        Map.of(
+            ERROR, "Registration failed",
+            CAUSE, ex.getCause().getMessage(),
+            MESSAGE, ex.getMessage());
+    return ResponseEntity.internalServerError().body(body);
   }
 }

@@ -36,11 +36,9 @@ import java.util.List;
 public class User {
 
   /**
-   * The unique identifier of the user. Generated automatically by the database using identity
-   * strategy.
+   * The unique identifier of the user.
    */
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   /** The user's first name. Cannot be {@code null}. */
