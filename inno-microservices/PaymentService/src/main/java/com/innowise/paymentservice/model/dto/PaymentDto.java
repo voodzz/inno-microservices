@@ -19,10 +19,9 @@ import java.time.Instant;
  * @param paymentAmount The monetary value of the payment. Must not be null.
  */
 public record PaymentDto(
-        String id,
-        @NotNull Long orderId,
-        @NotNull Long userId,
-        @NotNull StatusEnum status,
-        @PastOrPresent Instant timestamp,
-        @NotNull BigDecimal paymentAmount
-) {}
+    String id,
+    @NotNull Long orderId,
+    @NotNull Long userId,
+    @NotNull StatusEnum status,
+    @PastOrPresent Instant timestamp,
+    @NotNull BigDecimal paymentAmount) {}
