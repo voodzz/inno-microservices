@@ -1,6 +1,7 @@
 package com.innowise.paymentservice.repository;
 
 import com.innowise.paymentservice.model.StatusEnum;
+import com.innowise.paymentservice.model.dto.TotalSum;
 import com.innowise.paymentservice.model.entity.Payment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Aggregation;
@@ -63,7 +64,7 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
   @Aggregation(
       pipeline = {
         "{ '$match' : { 'timestamp' : { '$gte' :  ?0, '$lte' :  ?1}}}",
-        "{ '$group' : { '_id' : null, 'total' : { $sum: '$paymentAmount' } } }"
+        "{ '$group' : { '_id' : null, 'total' : { '$sum' : '$payment_amount' } } }"
       })
-  BigDecimal getTotalSumForPeriod(Instant start, Instant end);
+  TotalSum getTotalSumForPeriod(Instant start, Instant end);
 }

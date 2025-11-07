@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -32,6 +33,6 @@ public class Payment {
 
   private Instant timestamp;
 
-  @Field("payment_amount")
+  @Field(name = "payment_amount", targetType = FieldType.DECIMAL128)
   private BigDecimal paymentAmount;
 }
