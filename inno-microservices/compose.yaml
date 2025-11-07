@@ -68,6 +68,20 @@ services:
       SECURITY_JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       USERSERVICE_URL: ${USER_SERVICE_URL}
 
+  paymentservice:
+    build:
+      context: ./PaymentService
+      dockerfile: Dockerfile
+    container_name: paymentservice-app
+    ports:
+      - "8084:8084"
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    environment:
+      MONGO_URL: "mongodb://${DB_USER}:${DB_PASSWORD}@mongodb:27017/${DB_PAYMENT_SERVICE}?authSource=admin"
+
   redis:
     image: redis/redis-stack:latest
     ports:
@@ -118,7 +132,26 @@ services:
     volumes:
       - orderservice_db_data:/var/lib/postgresql/data
 
+  mongodb:
+    image: mongo:8.2.1
+    container_name: paymentservice_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: paymentservice
+    command: ["mongod", "--bind_ip_all"]
+
+    volumes:
+      - mongo_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
 volumes:
   userservice_db_data:
   authservice_db_data:
   orderservice_db_data:
+  mongo_data:
