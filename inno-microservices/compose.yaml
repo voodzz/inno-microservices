@@ -80,7 +80,7 @@ services:
     env_file:
       - .env
     environment:
-      MONGO_URL: "mongodb://${DB_USER}:${DB_PASSWORD}@mongodb:27017/${DB_PAYMENT_SERVICE}?authSource=admin"
+      MONGO_URL: "mongodb://mongodb:27017/${DB_PAYMENT_SERVICE}"
 
   redis:
     image: redis/redis-stack:latest
