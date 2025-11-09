@@ -1,6 +1,7 @@
 package com.innowise.paymentservice.model.dto;
 
 import com.innowise.paymentservice.model.StatusEnum;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
@@ -23,5 +24,5 @@ public record PaymentDto(
     @NotNull Long orderId,
     @NotNull Long userId,
     @NotNull StatusEnum status,
-    @PastOrPresent Instant timestamp,
-    @NotNull BigDecimal paymentAmount) {}
+    @NotNull @PastOrPresent Instant timestamp,
+    @NotNull @DecimalMin(value = "0.0", inclusive = false) BigDecimal paymentAmount) {}

@@ -6,5 +6,5 @@ import java.math.BigDecimal;
 
 @Data
 public class TotalSum {
-    private BigDecimal total;
+  private BigDecimal total;
 }
