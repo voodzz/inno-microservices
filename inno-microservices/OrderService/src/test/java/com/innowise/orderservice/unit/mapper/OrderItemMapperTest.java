@@ -152,4 +152,3 @@ public class OrderItemMapperTest {
     assertThat(entityList).isEmpty();
   }
 }
-

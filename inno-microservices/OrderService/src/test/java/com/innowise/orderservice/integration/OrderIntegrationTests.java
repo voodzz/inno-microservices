@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 import com.innowise.orderservice.mapper.OrderMapper;
+import com.innowise.orderservice.messaging.OrderEventProducer;
 import com.innowise.orderservice.model.StatusEnum;
 import com.innowise.orderservice.model.dto.OrderDto;
 import com.innowise.orderservice.model.dto.UserDto;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -57,6 +59,8 @@ public class OrderIntegrationTests {
   }
 
   private static WireMockServer wireMockServer;
+
+  @MockitoBean private OrderEventProducer orderEventProducer;
 
   @Autowired private OrderService orderService;
 
