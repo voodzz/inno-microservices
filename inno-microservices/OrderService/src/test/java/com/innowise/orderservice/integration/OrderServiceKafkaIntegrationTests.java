@@ -138,7 +138,6 @@ class OrderServiceKafkaIntegrationTests {
     orderRepository.deleteAll();
     wireMockServer.resetMappings();
 
-    // Setup Kafka consumer for OrderCreatedEvent
     DefaultKafkaConsumerFactory<String, OrderCreatedEvent> consumerFactory =
         new DefaultKafkaConsumerFactory<>(
             java.util.Map.of(
@@ -163,7 +162,6 @@ class OrderServiceKafkaIntegrationTests {
     orderEventConsumer = consumerFactory.createConsumer();
     orderEventConsumer.subscribe(List.of("queuing.orderservice.order"));
 
-    // Wait for partition assignment and seek to end to read only new messages
     await()
         .atMost(10, TimeUnit.SECONDS)
         .pollInterval(Duration.ofMillis(100))
@@ -178,7 +176,6 @@ class OrderServiceKafkaIntegrationTests {
               return false;
             });
 
-    // Setup Kafka producer for PaymentCreatedEvent
     DefaultKafkaProducerFactory<String, PaymentCreatedEvent> producerFactory =
         new DefaultKafkaProducerFactory<>(
             java.util.Map.of(
@@ -219,7 +216,6 @@ class OrderServiceKafkaIntegrationTests {
     assertThat(result.orderDto().id()).isNotNull();
     assertThat(result.orderDto().status()).isEqualTo(StatusEnum.PENDING);
 
-    // Verify OrderCreatedEvent was published with correct data using spy
     var captor = org.mockito.ArgumentCaptor.forClass(OrderCreatedEvent.class);
     org.mockito.Mockito.verify(orderEventProducer, org.mockito.Mockito.timeout(5_000))
         .publishOrderCreated(captor.capture());
@@ -237,18 +233,14 @@ class OrderServiceKafkaIntegrationTests {
       throws Exception {
     setupUserServiceMock(testUser, 200);
 
-    // Create an order first - this will commit its own transaction
     var orderResult = orderService.create(testOrderDto);
     Long orderId = orderResult.orderDto().id();
 
-    // Small delay to ensure transaction is committed and order is visible
     Thread.sleep(100);
 
-    // Verify order is in PENDING status
     Order order = orderRepository.findById(orderId).orElseThrow();
     assertThat(order.getStatus()).isEqualTo(StatusEnum.PENDING);
 
-    // Send PaymentCreatedEvent with SUCCESS status
     PaymentCreatedEvent paymentEvent =
         new PaymentCreatedEvent(
             "payment-123",
@@ -266,7 +258,6 @@ class OrderServiceKafkaIntegrationTests {
       throw new RuntimeException("Failed to send payment event", e);
     }
 
-    // Verify order status was updated to CONFIRMED
     await()
         .atMost(15, TimeUnit.SECONDS)
         .pollInterval(Duration.ofMillis(500))
@@ -285,18 +276,14 @@ class OrderServiceKafkaIntegrationTests {
       throws Exception {
     setupUserServiceMock(testUser, 200);
 
-    // Create an order first - this will commit its own transaction
     var orderResult = orderService.create(testOrderDto);
     Long orderId = orderResult.orderDto().id();
 
-    // Small delay to ensure transaction is committed and order is visible
     Thread.sleep(100);
 
-    // Verify order is in PENDING status
     Order order = orderRepository.findById(orderId).orElseThrow();
     assertThat(order.getStatus()).isEqualTo(StatusEnum.PENDING);
 
-    // Send PaymentCreatedEvent with FAILED status
     PaymentCreatedEvent paymentEvent =
         new PaymentCreatedEvent(
             "payment-456",
@@ -314,7 +301,6 @@ class OrderServiceKafkaIntegrationTests {
       throw new RuntimeException("Failed to send payment event", e);
     }
 
-    // Verify order status was updated to PAYMENT_FAILED
     await()
         .atMost(15, TimeUnit.SECONDS)
         .pollInterval(Duration.ofMillis(500))
@@ -332,7 +318,6 @@ class OrderServiceKafkaIntegrationTests {
   void handlePaymentEvent_ShouldNotUpdateOrder_WhenOrderDoesNotExist() throws Exception {
     Long nonExistentOrderId = 999L;
 
-    // Send PaymentCreatedEvent for non-existent order
     PaymentCreatedEvent paymentEvent =
         new PaymentCreatedEvent(
             "payment-789",
@@ -346,13 +331,11 @@ class OrderServiceKafkaIntegrationTests {
       paymentEventKafkaTemplate
           .send("queuing.paymentservice.payment", nonExistentOrderId.toString(), paymentEvent)
           .get(5, TimeUnit.SECONDS);
-      // Give time for the event to be processed (even though order doesn't exist)
       Thread.sleep(1000);
     } catch (Exception e) {
       throw new RuntimeException("Failed to send payment event", e);
     }
 
-    // Verify order still doesn't exist (no exception should be thrown, just logged)
     assertThat(orderRepository.findById(nonExistentOrderId)).isEmpty();
   }
 
@@ -363,7 +346,6 @@ class OrderServiceKafkaIntegrationTests {
 
     var result = orderService.create(testOrderDto);
 
-    // Verify OrderCreatedEvent contains correct total amount using spy
     var captor = org.mockito.ArgumentCaptor.forClass(OrderCreatedEvent.class);
     org.mockito.Mockito.verify(orderEventProducer, org.mockito.Mockito.timeout(5_000))
         .publishOrderCreated(captor.capture());
