@@ -19,7 +19,7 @@ public class OrderEventListener {
   private final PaymentEventProducer paymentEventProducer;
 
   @KafkaListener(
-      topics = "${kafka.topic.order-created}",
+      topics = "${kafka.topic.order.created}",
       groupId = "${spring.kafka.consumer.group-id}")
   public void onOrderCreated(@Payload OrderCreatedEvent event) {
     log.debug("Received order-created event for order {}", event.orderId());

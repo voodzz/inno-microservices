@@ -4,6 +4,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.exception.DatabaseException;
 import liquibase.ext.mongodb.database.MongoLiquibaseDatabase;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +13,10 @@ import org.springframework.context.annotation.Configuration;
  * required beans for connecting to the database and running migrations.
  */
 @Configuration
+@ConditionalOnProperty(
+    name = "mongo.liquibase.enabled",
+    havingValue = "true",
+    matchIfMissing = true)
 public class MongoLiquibaseConfig {
   @Value("${mongo.url}")
   private String url;

@@ -17,11 +17,14 @@ public class OrderEventProducer {
 
   public void publishOrderCreated(OrderCreatedEvent event) {
     kafkaTemplate
-        .send(topicProperties.orderCreated(), event.orderId().toString(), event)
+        .send(topicProperties.created(), event.orderId().toString(), event)
         .whenComplete(
             (result, throwable) -> {
               if (throwable != null) {
-                log.error("Failed to publish order-created event for order {}", event.orderId(), throwable);
+                log.error(
+                    "Failed to publish order-created event for order {}",
+                    event.orderId(),
+                    throwable);
               } else {
                 log.debug(
                     "Published order-created event for order {} to partition {}",
@@ -31,5 +34,3 @@ public class OrderEventProducer {
             });
   }
 }
-
-

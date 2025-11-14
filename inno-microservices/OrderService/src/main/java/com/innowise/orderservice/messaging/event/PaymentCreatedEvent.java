@@ -10,5 +10,3 @@ public record PaymentCreatedEvent(
     String status,
     Instant timestamp,
     BigDecimal paymentAmount) {}
-
-

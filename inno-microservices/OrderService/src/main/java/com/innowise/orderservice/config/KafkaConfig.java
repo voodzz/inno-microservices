@@ -14,6 +14,6 @@ public class KafkaConfig {
 
   @Bean
   public NewTopic orderTopic() {
-    return TopicBuilder.name(topicProperties.orderCreated()).build();
+    return TopicBuilder.name(topicProperties.created()).build();
   }
 }

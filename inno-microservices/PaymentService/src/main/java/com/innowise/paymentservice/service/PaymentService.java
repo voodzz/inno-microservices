@@ -22,12 +22,13 @@ public class PaymentService {
 
   @Transactional
   public PaymentDto createPayment(OrderCreatedEvent event) {
-      StatusEnum status = mapNumberToStatus(randomNumberService.fetchRandomNumber());
-      PaymentDto paymentDto =
-              new PaymentDto(null, event.orderId(), event.userId(), status, Instant.now(), event.totalAmount());
+    StatusEnum status = mapNumberToStatus(randomNumberService.fetchRandomNumber());
+    PaymentDto paymentDto =
+        new PaymentDto(
+            null, event.orderId(), event.userId(), status, Instant.now(), event.totalAmount());
 
-      Payment saved = paymentRepository.insert(paymentMapper.toEntity(paymentDto));
-      return paymentMapper.toDto(saved);
+    Payment saved = paymentRepository.insert(paymentMapper.toEntity(paymentDto));
+    return paymentMapper.toDto(saved);
   }
 
   private StatusEnum mapNumberToStatus(int randomNumber) {

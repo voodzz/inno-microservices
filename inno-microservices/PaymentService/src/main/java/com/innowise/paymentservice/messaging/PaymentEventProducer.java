@@ -17,11 +17,14 @@ public class PaymentEventProducer {
 
   public void publishPaymentCreated(PaymentCreatedEvent event) {
     kafkaTemplate
-        .send(topicProperties.paymentCreated(), event.orderId().toString(), event)
+        .send(topicProperties.created(), event.orderId().toString(), event)
         .whenComplete(
             (result, throwable) -> {
               if (throwable != null) {
-                log.error("Failed to publish payment-created event for order {}", event.orderId(), throwable);
+                log.error(
+                    "Failed to publish payment-created event for order {}",
+                    event.orderId(),
+                    throwable);
               } else {
                 log.debug(
                     "Published payment-created event for order {} to partition {}",
@@ -31,5 +34,3 @@ public class PaymentEventProducer {
             });
   }
 }
-
-
