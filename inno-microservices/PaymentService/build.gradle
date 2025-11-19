@@ -29,8 +29,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.apache.kafka:kafka-streams'
-    implementation 'org.liquibase:liquibase-core:5.0.1'
-    implementation 'org.liquibase.ext:liquibase-mongodb:5.0.1'
+    implementation 'org.liquibase:liquibase-core:4.31.0'
+    implementation 'org.liquibase.ext:liquibase-mongodb:4.31.0'
     implementation 'org.springframework.kafka:spring-kafka'
 
     compileOnly 'org.projectlombok:lombok'
