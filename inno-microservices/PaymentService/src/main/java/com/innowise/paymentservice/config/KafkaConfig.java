@@ -16,4 +16,9 @@ public class KafkaConfig {
   public NewTopic paymentTopic() {
     return TopicBuilder.name(topicProperties.created()).build();
   }
+
+  @Bean
+  public NewTopic dlqTopic() {
+    return TopicBuilder.name(topicProperties.dlq()).build();
+  }
 }
