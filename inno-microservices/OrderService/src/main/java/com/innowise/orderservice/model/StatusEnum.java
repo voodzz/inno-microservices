@@ -7,5 +7,6 @@ public enum StatusEnum {
   SHIPPED,
   DELIVERED,
   REFUNDED,
-  PAYMENT_FAILED
+  PAYMENT_FAILED,
+  SUCCESS
 }
