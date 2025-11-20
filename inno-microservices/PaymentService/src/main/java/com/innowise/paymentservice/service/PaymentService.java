@@ -1,5 +1,6 @@
 package com.innowise.paymentservice.service;
 
+import com.innowise.paymentservice.exception.ExternalApiException;
 import com.innowise.paymentservice.mapper.PaymentMapper;
 import com.innowise.paymentservice.model.StatusEnum;
 import com.innowise.paymentservice.model.dto.PaymentDto;
@@ -20,8 +21,7 @@ public class PaymentService {
   private final PaymentMapper paymentMapper;
   private final RandomNumberService randomNumberService;
 
-  @Transactional
-  public PaymentDto createPayment(OrderCreatedEvent event) {
+  public PaymentDto createPayment(OrderCreatedEvent event) throws ExternalApiException {
     StatusEnum status = mapNumberToStatus(randomNumberService.fetchRandomNumber());
     PaymentDto paymentDto =
         new PaymentDto(
