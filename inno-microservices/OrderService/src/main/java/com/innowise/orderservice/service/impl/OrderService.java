@@ -116,18 +116,26 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
         .ifPresentOrElse(
             order -> {
               StatusEnum targetStatus = mapPaymentStatus(event.status());
-              orderRepository.updateById(order.getId(), targetStatus);
-              log.debug(
-                  "Order {} status updated to {} based on payment {}",
-                  order.getId(),
-                  targetStatus,
-                  event.paymentId());
+              if (order.getStatus() != targetStatus) {
+                int updated = orderRepository.updateById(order.getId(), targetStatus);
+                if (updated == 0) {
+                  log.error("Update failed for Order with ID {}", order.getId());
+                  throw new UpdateException(order.getId());
+                }
+                log.debug(
+                    "Order {} status updated to {} based on payment {}",
+                    order.getId(),
+                    targetStatus,
+                    event.paymentId());
+              }
             },
-            () ->
-                log.warn(
-                    "Order {} not found while handling payment event {}",
-                    event.orderId(),
-                    event.paymentId()));
+            () -> {
+              log.warn(
+                  "Order {} not found while handling payment event {}",
+                  event.orderId(),
+                  event.paymentId());
+              throw new NotFoundException(event.orderId());
+            });
   }
 
   private OrderUserDto combineWithUser(OrderDto orderDto) {
@@ -166,7 +174,9 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   }
 
   private StatusEnum mapPaymentStatus(String paymentStatus) {
-    return "SUCCESS".equalsIgnoreCase(paymentStatus) ? StatusEnum.CONFIRMED : StatusEnum.PAYMENT_FAILED;
+    return StatusEnum.SUCCESS.toString().equalsIgnoreCase(paymentStatus)
+        ? StatusEnum.CONFIRMED
+        : StatusEnum.PAYMENT_FAILED;
   }
 
   private UserDto fetchUser(String email) {
