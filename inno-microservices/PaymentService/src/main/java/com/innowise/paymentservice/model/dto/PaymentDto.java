@@ -25,4 +25,4 @@ public record PaymentDto(
     @NotNull Long userId,
     @NotNull StatusEnum status,
     @NotNull @PastOrPresent Instant timestamp,
-    @NotNull @DecimalMin(value = "0.0", inclusive = false) BigDecimal paymentAmount) {}
+    @NotNull @DecimalMin(value = "0.01") BigDecimal paymentAmount) {}
