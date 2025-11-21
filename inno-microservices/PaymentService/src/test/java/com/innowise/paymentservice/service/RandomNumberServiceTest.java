@@ -34,7 +34,7 @@ class RandomNumberServiceTest {
 
   @BeforeEach
   void setUp() {
-    properties = new ExternalApiProperties(API_URL);
+    properties = new ExternalApiProperties(API_URL, 5000L, 5000L);
     randomNumberService = new RandomNumberService(restClient, properties);
   }
 
