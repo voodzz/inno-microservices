@@ -2,6 +2,7 @@ package com.innowise.orderservice.service.impl;
 
 import com.innowise.orderservice.client.UserServiceClient;
 import com.innowise.orderservice.exception.CircuitBreakerOpenException;
+import com.innowise.orderservice.exception.CredentialsMismatchException;
 import com.innowise.orderservice.exception.NotFoundException;
 import com.innowise.orderservice.exception.RetrieveUserException;
 import com.innowise.orderservice.exception.UpdateException;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -47,7 +49,12 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   @Transactional
   @Override
   public OrderUserDto create(OrderDto dto) {
-    combineWithUser(dto);
+    OrderUserDto orderUserDto = combineWithUser(dto);
+    if (!Objects.equals(orderUserDto.userDto().id(), dto.userId())) {
+      throw new CredentialsMismatchException(
+          "userId in the request is not the same as the userId from UserService: '%s' and '%s' accordingly."
+              .formatted(dto.userId(), orderUserDto.userDto().id()));
+    }
 
     Order entity = orderMapper.toEntity(dto);
     BigDecimal totalAmount = countTotalCost(dto, entity);

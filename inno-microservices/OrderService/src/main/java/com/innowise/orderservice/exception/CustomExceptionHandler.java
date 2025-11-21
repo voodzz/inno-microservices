@@ -52,18 +52,16 @@ public class CustomExceptionHandler {
   }
 
   /**
-   * Handles custom {@link UpdateException} errors.
+   * Handles custom {@link UpdateException} and {@link CredentialsMismatchException} errors.
    *
-   * @param ex the exception indicating a failed update operation
+   * @param ex the exception indicating a failed update operation or credentials mismatch
    * @return a {@link ResponseEntity} with status 400 (Bad Request) and a map containing the error
    *     message and a timestamp
    */
-  @ExceptionHandler(UpdateException.class)
+  @ExceptionHandler({UpdateException.class, CredentialsMismatchException.class})
   public ResponseEntity<Map<String, String>> handleUpdateException(RuntimeException ex) {
-    Map<String, String> error = new HashMap<>();
-    error.put(ERROR, ex.getMessage());
-    error.put(TIMESTAMP, LocalDateTime.now().toString());
-    return ResponseEntity.badRequest().body(error);
+    Map<String, String> body = getGeneralBody(ex);
+    return ResponseEntity.badRequest().body(body);
   }
 
   /**
@@ -91,10 +89,8 @@ public class CustomExceptionHandler {
    */
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<Map<String, String>> handleNotFoundException(NotFoundException ex) {
-    Map<String, String> error = new HashMap<>();
-    error.put(ERROR, ex.getMessage());
-    error.put(TIMESTAMP, LocalDateTime.now().toString());
-    return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    Map<String, String> body = getGeneralBody(ex);
+    return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
   }
 
   /**
@@ -111,5 +107,12 @@ public class CustomExceptionHandler {
     body.put(TIMESTAMP, LocalDateTime.now().toString());
     body.put(CAUSE, ex.getCause());
     return ResponseEntity.internalServerError().body(body);
+  }
+
+  private static Map<String, String> getGeneralBody(RuntimeException ex) {
+    Map<String, String> error = new HashMap<>();
+    error.put(ERROR, ex.getMessage());
+    error.put(TIMESTAMP, LocalDateTime.now().toString());
+    return error;
   }
 }
