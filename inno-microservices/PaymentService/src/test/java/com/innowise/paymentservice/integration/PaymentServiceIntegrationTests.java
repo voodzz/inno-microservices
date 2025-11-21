@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.innowise.paymentservice.exception.ExternalApiException;
+import com.innowise.paymentservice.exception.PaymentCreationException;
 import com.innowise.paymentservice.messaging.OrderEventListener;
 import com.innowise.paymentservice.messaging.PaymentEventProducer;
 import com.innowise.paymentservice.messaging.event.OrderCreatedEvent;
@@ -253,8 +254,7 @@ class PaymentServiceIntegrationTests {
     OrderCreatedEvent event = new OrderCreatedEvent(orderId, userId, amount, createdAt);
 
     assertThatThrownBy(() -> paymentService.createPayment(event))
-        .isInstanceOf(ExternalApiException.class)
-        .hasMessageContaining("Failed to retrieve a random number");
+        .isInstanceOf(PaymentCreationException.class);
 
     List<Payment> savedPayments = paymentRepository.findAll();
     assertThat(savedPayments).isEmpty();
@@ -278,8 +278,7 @@ class PaymentServiceIntegrationTests {
     OrderCreatedEvent event = new OrderCreatedEvent(orderId, userId, amount, createdAt);
 
     assertThatThrownBy(() -> paymentService.createPayment(event))
-        .isInstanceOf(ExternalApiException.class)
-        .hasMessageContaining("empty response");
+        .isInstanceOf(PaymentCreationException.class);
 
     List<Payment> savedPayments = paymentRepository.findAll();
     assertThat(savedPayments).isEmpty();
