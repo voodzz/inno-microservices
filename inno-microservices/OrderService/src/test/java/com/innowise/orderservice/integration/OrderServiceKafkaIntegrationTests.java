@@ -213,8 +213,8 @@ class OrderServiceKafkaIntegrationTests {
 
     var result = orderService.create(testOrderDto);
 
-    assertThat(result.orderDto().id()).isNotNull();
-    assertThat(result.orderDto().status()).isEqualTo(StatusEnum.PENDING);
+    assertThat(result.getOrderDto().id()).isNotNull();
+    assertThat(result.getOrderDto().status()).isEqualTo(StatusEnum.PENDING);
 
     var captor = org.mockito.ArgumentCaptor.forClass(OrderCreatedEvent.class);
     org.mockito.Mockito.verify(orderEventProducer, org.mockito.Mockito.timeout(5_000))
@@ -222,7 +222,7 @@ class OrderServiceKafkaIntegrationTests {
 
     OrderCreatedEvent event = captor.getValue();
     assertThat(event).isNotNull();
-    assertThat(event.orderId()).isEqualTo(result.orderDto().id());
+    assertThat(event.orderId()).isEqualTo(result.getOrderDto().id());
     assertThat(event.userId()).isEqualTo(testUser.id());
     assertThat(event.totalAmount()).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat(event.createdAt()).isNotNull();
@@ -234,7 +234,7 @@ class OrderServiceKafkaIntegrationTests {
     setupUserServiceMock(testUser, 200);
 
     var orderResult = orderService.create(testOrderDto);
-    Long orderId = orderResult.orderDto().id();
+    Long orderId = orderResult.getOrderDto().id();
 
     Thread.sleep(100);
 
@@ -277,7 +277,7 @@ class OrderServiceKafkaIntegrationTests {
     setupUserServiceMock(testUser, 200);
 
     var orderResult = orderService.create(testOrderDto);
-    Long orderId = orderResult.orderDto().id();
+    Long orderId = orderResult.getOrderDto().id();
 
     Thread.sleep(100);
 
@@ -351,7 +351,7 @@ class OrderServiceKafkaIntegrationTests {
         .publishOrderCreated(captor.capture());
 
     OrderCreatedEvent event = captor.getValue();
-    assertThat(event.orderId()).isEqualTo(result.orderDto().id());
+    assertThat(event.orderId()).isEqualTo(result.getOrderDto().id());
     assertThat(event.totalAmount()).isNotNull();
   }
 

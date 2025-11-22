@@ -50,10 +50,10 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
   @Override
   public OrderUserDto create(OrderDto dto) {
     OrderUserDto orderUserDto = combineWithUser(dto);
-    if (!Objects.equals(orderUserDto.userDto().id(), dto.userId())) {
+    if (!Objects.equals(orderUserDto.getUserDto().id(), dto.userId())) {
       throw new CredentialsMismatchException(
           "userId in the request is not the same as the userId from UserService: '%s' and '%s' accordingly."
-              .formatted(dto.userId(), orderUserDto.userDto().id()));
+              .formatted(dto.userId(), orderUserDto.getUserDto().id()));
     }
 
     Order entity = orderMapper.toEntity(dto);
@@ -65,7 +65,8 @@ public class OrderService implements CrudService<OrderDto, OrderUserDto, Long> {
         new OrderCreatedEvent(saved.getId(), saved.getUserId(), totalAmount, Instant.now()));
 
     OrderDto savedDto = orderMapper.toDto(saved);
-    return combineWithUser(savedDto);
+    orderUserDto.setOrderDto(savedDto);
+    return orderUserDto;
   }
 
   @Transactional(readOnly = true)

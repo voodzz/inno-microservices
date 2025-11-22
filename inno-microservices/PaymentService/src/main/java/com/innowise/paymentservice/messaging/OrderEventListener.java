@@ -1,6 +1,5 @@
 package com.innowise.paymentservice.messaging;
 
-import com.innowise.paymentservice.exception.ExternalApiException;
 import com.innowise.paymentservice.messaging.event.OrderCreatedEvent;
 import com.innowise.paymentservice.messaging.event.PaymentCreatedEvent;
 import com.innowise.paymentservice.model.dto.PaymentDto;

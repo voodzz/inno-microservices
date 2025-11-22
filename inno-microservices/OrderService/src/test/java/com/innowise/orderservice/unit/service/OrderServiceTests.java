@@ -71,7 +71,7 @@ public class OrderServiceTests {
 
     OrderUserDto result = orderService.findById(orderId);
 
-    assertThat(result.orderDto().id()).isEqualTo(orderId);
+    assertThat(result.getOrderDto().id()).isEqualTo(orderId);
     verify(orderRepository).findById(orderId);
   }
 
@@ -112,7 +112,7 @@ public class OrderServiceTests {
 
     OrderUserDto result = orderService.create(newDto);
 
-    assertThat(result.orderDto().id()).isEqualTo(2L);
+    assertThat(result.getOrderDto().id()).isEqualTo(2L);
     verify(orderRepository).save(mockOrderEntity);
   }
 

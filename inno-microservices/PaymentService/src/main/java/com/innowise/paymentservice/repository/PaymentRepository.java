@@ -68,10 +68,11 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
       })
   TotalSum getTotalSumForPeriod(Instant start, Instant end);
 
-    /**
-     * Checks whether the payment for the given order exists
-     * @param orderId the ID of the order for which the payment was created
-     * @return true - if the order is present, false - otherwise
-     */
+  /**
+   * Checks whether the payment for the given order exists
+   *
+   * @param orderId the ID of the order for which the payment was created
+   * @return true - if the order is present, false - otherwise
+   */
   boolean existsByOrderId(Long orderId);
 }
