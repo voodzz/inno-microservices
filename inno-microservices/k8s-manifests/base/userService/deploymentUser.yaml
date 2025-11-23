@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-user
+  labels:
+    app: app-user
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-user
+  template:
+    metadata:
+      name: app-user
+      labels:
+        app: app-user
+    spec:
+      containers:
+        - name: user-service
+          image: voodz/userservice:latest
+          ports:
+            - containerPort: 8081

@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-payment
+  labels:
+    app: app-payment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-payment
+  template:
+    metadata:
+      name: app-payment
+      labels:
+        app: app-payment
+    spec:
+      containers:
+        - name: app-payment
+          image: voodz/paymentservice:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8084
+              protocol: TCP

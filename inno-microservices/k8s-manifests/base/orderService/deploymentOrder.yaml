@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-order
+  labels:
+    app: app-order
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-order
+  template:
+    metadata:
+      name: app-order
+      labels:
+        app: app-order
+    spec:
+      containers:
+        - name: app-order
+          image: voodz/orderservice:latest
+          ports:
+            - containerPort: 8083

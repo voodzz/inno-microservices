@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-auth
+  labels:
+    app: app-auth
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-auth
+  template:
+    metadata:
+      name: app-auth
+      labels:
+        app: app-auth
+    spec:
+      containers:
+        - name: app-auth
+          image: voodz/authservice:latest
+          ports:
+            - containerPort: 8082
+              protocol: TCP
