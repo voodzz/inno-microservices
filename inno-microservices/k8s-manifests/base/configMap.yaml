@@ -13,7 +13,7 @@ data:
   SPRING_DATA_REDIS_HOST: redis
   SPRING_DATA_REDIS_PORT: "6379"
   MONGO_URL: mongodb://mongodb-service:27017/paymentservice
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  KAFKA_BOOTSTRAP_SERVERS: kafka.default:9092
   DB_USER_SERVICE: userservice
   DB_AUTH_SERVICE: authservice
   DB_ORDER_SERVICE: orderservice

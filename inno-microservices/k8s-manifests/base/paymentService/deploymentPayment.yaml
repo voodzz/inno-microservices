@@ -5,7 +5,7 @@ metadata:
   labels:
     app: app-payment
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: app-payment
@@ -30,6 +30,13 @@ spec:
                 configMapKeyRef:
                   name: system-config
                   key: MONGO_URL
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka.default:9092"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
           ports:
             - containerPort: 8084
               protocol: TCP
