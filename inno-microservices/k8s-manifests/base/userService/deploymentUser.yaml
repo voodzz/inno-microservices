@@ -18,5 +18,27 @@ spec:
       containers:
         - name: user-service
           image: voodz/userservice:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: system-config
+            - secretRef:
+                name: system-secrets
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: SPRING_DATASOURCE_URL_USERSERVICE
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_PASSWORD
           ports:
             - containerPort: 8081

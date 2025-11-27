@@ -19,6 +19,17 @@ spec:
         - name: app-payment
           image: voodz/paymentservice:latest
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: system-config
+            - secretRef:
+                name: system-secrets
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: MONGO_URL
           ports:
             - containerPort: 8084
               protocol: TCP

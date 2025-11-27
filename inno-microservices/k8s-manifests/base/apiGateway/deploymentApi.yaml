@@ -18,6 +18,12 @@ spec:
       containers:
         - name: api-gateway
           image: voodz/api-gateway:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: system-config
+            - secretRef:
+                name: system-secrets
           ports:
             - containerPort: 8080
               protocol: TCP

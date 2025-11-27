@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - configMap.yaml
+  - system-secret.yaml
+  - mongo/deploymentMongo.yaml
+  - mongo/serviceMongo.yaml
+  - mongo/pvcMongo.yaml
+  - redis/deploymentRedis.yaml
+  - redis/serviceRedis.yaml
+  - kafka/statefulSetKafka.yaml
+  - kafka/serviceKafka.yaml
+  - postgres-user/statefulset.yaml
+  - postgres-user/service.yaml
+  - postgres-auth/statefulset.yaml
+  - postgres-auth/service.yaml
+  - postgres-order/statefulset.yaml
+  - postgres-order/service.yaml
+  - apiGateway/deploymentApi.yaml
+  - apiGateway/serviceApi.yaml
+  - apiGateway/ingress.yaml
+  - authService/deploymentAuth.yaml
+  - authService/serviceAuth.yaml
+  - userService/deploymentUser.yaml
+  - userService/serviceUser.yaml
+  - orderService/deploymentOrder.yaml
+  - orderService/serviceOrder.yaml
+  - paymentService/deploymentPayment.yaml
+  - paymentService/servicePayment.yaml

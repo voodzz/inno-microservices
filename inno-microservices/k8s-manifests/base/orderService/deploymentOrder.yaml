@@ -18,5 +18,32 @@ spec:
       containers:
         - name: app-order
           image: voodz/orderservice:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: system-config
+            - secretRef:
+                name: system-secrets
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: SPRING_DATASOURCE_URL_ORDERSERVICE
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_PASSWORD
+            - name: USERSERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: USER_SERVICE_URL
           ports:
             - containerPort: 8083
