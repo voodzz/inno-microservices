@@ -5,7 +5,7 @@ metadata:
   labels:
     app: app-user
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: app-user
@@ -44,13 +44,15 @@ spec:
             - containerPort: 8081
           livenessProbe:
             httpGet:
-              path: /health
+              path: /actuator/health
               port: 8081
-            initialDelaySeconds: 10
+            initialDelaySeconds: 200
             periodSeconds: 5
+            timeoutSeconds: 10
           readinessProbe:
             httpGet:
-              path: /health
+              path: /actuator/health
               port: 8081
-            initialDelaySeconds: 10
+            initialDelaySeconds: 200
             periodSeconds: 5
+            timeoutSeconds: 10

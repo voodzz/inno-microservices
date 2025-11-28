@@ -25,7 +25,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  *
  * <ul>
  *   <li>Provides a {@link PasswordEncoder} bean using BCrypt.
- *   <li>Registers an {@link AuthenticationProvider} backed by the application's {@link UserService}.
+ *   <li>Registers an {@link AuthenticationProvider} backed by the application's {@link
+ *       UserService}.
  *   <li>Exposes an {@link AuthenticationManager} obtained from {@link AuthenticationConfiguration}.
  *   <li>Builds a {@link SecurityFilterChain} that disables CSRF, permits unauthenticated access to
  *       {@code /api/v1/auth/**}, enforces stateless session management, registers the custom
@@ -70,7 +71,12 @@ public class SecurityConfig {
     return http.csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/api/v1/auth/**").permitAll().anyRequest().authenticated())
+                auth.requestMatchers("/api/v1/auth/**")
+                    .permitAll()
+                    .requestMatchers("/actuator/health/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider())
