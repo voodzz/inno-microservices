@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 import com.innowise.orderservice.mapper.OrderMapper;
+import com.innowise.orderservice.messaging.OrderEventProducer;
 import com.innowise.orderservice.model.StatusEnum;
 import com.innowise.orderservice.model.dto.OrderDto;
 import com.innowise.orderservice.model.dto.UserDto;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -57,6 +59,8 @@ public class OrderIntegrationTests {
   }
 
   private static WireMockServer wireMockServer;
+
+  @MockitoBean private OrderEventProducer orderEventProducer;
 
   @Autowired private OrderService orderService;
 
@@ -110,13 +114,13 @@ public class OrderIntegrationTests {
 
     var result = orderService.create(testOrderDto);
 
-    assertThat(result.orderDto().userId()).isEqualTo(1L);
-    assertThat(result.orderDto().status()).isEqualTo(StatusEnum.PENDING);
-    assertThat(result.orderDto().userEmail()).isEqualTo("john.doe@example.com");
-    assertThat(result.userDto().id()).isEqualTo(1L);
-    assertThat(result.userDto().name()).isEqualTo("John");
-    assertThat(result.userDto().surname()).isEqualTo("Doe");
-    assertThat(result.userDto().email()).isEqualTo("john.doe@example.com");
+    assertThat(result.getOrderDto().userId()).isEqualTo(1L);
+    assertThat(result.getOrderDto().status()).isEqualTo(StatusEnum.PENDING);
+    assertThat(result.getOrderDto().userEmail()).isEqualTo("john.doe@example.com");
+    assertThat(result.getUserDto().id()).isEqualTo(1L);
+    assertThat(result.getUserDto().name()).isEqualTo("John");
+    assertThat(result.getUserDto().surname()).isEqualTo("Doe");
+    assertThat(result.getUserDto().email()).isEqualTo("john.doe@example.com");
 
     List<Order> savedOrders = orderRepository.findAll();
     assertThat(savedOrders).hasSize(1);
@@ -163,11 +167,11 @@ public class OrderIntegrationTests {
 
     var result = orderService.findById(savedOrder.getId());
 
-    assertThat(result.orderDto().id()).isEqualTo(savedOrder.getId());
-    assertThat(result.orderDto().userId()).isEqualTo(1L);
-    assertThat(result.orderDto().status()).isEqualTo(StatusEnum.PENDING);
-    assertThat(result.userDto().name()).isEqualTo("John");
-    assertThat(result.userDto().email()).isEqualTo("john.doe@example.com");
+    assertThat(result.getOrderDto().id()).isEqualTo(savedOrder.getId());
+    assertThat(result.getOrderDto().userId()).isEqualTo(1L);
+    assertThat(result.getOrderDto().status()).isEqualTo(StatusEnum.PENDING);
+    assertThat(result.getUserDto().name()).isEqualTo("John");
+    assertThat(result.getUserDto().email()).isEqualTo("john.doe@example.com");
   }
 
   @Test
@@ -185,7 +189,7 @@ public class OrderIntegrationTests {
 
     var result = orderService.updateById(savedOrder.getId(), updateDto);
 
-    assertThat(result.orderDto().status()).isEqualTo(StatusEnum.CONFIRMED);
+    assertThat(result.getOrderDto().status()).isEqualTo(StatusEnum.CONFIRMED);
 
     Order updatedOrder = orderRepository.findById(savedOrder.getId()).orElseThrow();
     assertThat(updatedOrder.getStatus()).isEqualTo(StatusEnum.CONFIRMED);

@@ -6,6 +6,7 @@ public enum StatusEnum {
   PROCESSING,
   SHIPPED,
   DELIVERED,
-  CANCELLED,
-  REFUNDED
+  REFUNDED,
+  PAYMENT_FAILED,
+  SUCCESS
 }

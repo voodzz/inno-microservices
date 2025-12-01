@@ -1,0 +1,80 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0-create-payments-collection
+      author: voodzz
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - collectionExists:
+                collectionName: payments
+      changes:
+        - createCollection:
+            collectionName: payments
+
+  - changeSet:
+      id: 1-create-order-id-index
+      author: voodzz
+      changes:
+        - runCommand:
+            command: |
+              {
+                "createIndexes": "payments",
+                "indexes": [
+                  {
+                    "key": { "order_id": 1 },
+                    "name": "idx_payments_order_id_unique",
+                    "unique": true
+                  }
+                ]
+              }
+
+  - changeSet:
+      id: 2-create-user-id-index
+      author: voodzz
+      changes:
+        - runCommand:
+            command: |
+              {
+                "createIndexes": "payments",
+                "indexes": [
+                  {
+                    "key": { "user_id": 1 },
+                    "name": "idx_payments_user_id",
+                    "unique": false
+                  }
+                ]
+              }
+
+  - changeSet:
+      id: 3-create-status-index
+      author: voodzz
+      changes:
+        - runCommand:
+            command: |
+              {
+                "createIndexes": "payments",
+                "indexes": [
+                  {
+                    "key": { "status": 1 },
+                    "name": "idx_payments_status",
+                    "unique": false
+                  }
+                ]
+              }
+
+  - changeSet:
+      id: 4-create-user-status-compound-index
+      author: voodzz
+      changes:
+        - runCommand:
+            command: |
+              {
+                "createIndexes": "payments",
+                "indexes": [
+                  {
+                    "key": { "user_id": 1, "status": 1 },
+                    "name": "idx_payments_user_id_status",
+                    "unique": false
+                  }
+                ]
+              }

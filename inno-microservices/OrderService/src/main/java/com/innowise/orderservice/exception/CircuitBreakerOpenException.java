@@ -5,9 +5,9 @@ import java.io.Serial;
 /**
  * Exception thrown when the circuit breaker is open and the service is unavailable.
  *
- * <p>This exception is used to indicate that the User Service is currently unavailable
- * due to the circuit breaker being in an open state. It allows for graceful error handling
- * and provides informative error messages to the client.
+ * <p>This exception is used to indicate that the User Service is currently unavailable due to the
+ * circuit breaker being in an open state. It allows for graceful error handling and provides
+ * informative error messages to the client.
  */
 public class CircuitBreakerOpenException extends RuntimeException {
   @Serial private static final long serialVersionUID = -1234567890123456789L;
@@ -26,4 +26,3 @@ public class CircuitBreakerOpenException extends RuntimeException {
     super(cause);
   }
 }
-

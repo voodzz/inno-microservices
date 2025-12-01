@@ -5,11 +5,13 @@ import com.innowise.orderservice.exception.NotFoundException;
 import com.innowise.orderservice.exception.RetrieveUserException;
 import com.innowise.orderservice.exception.UpdateException;
 import com.innowise.orderservice.mapper.OrderMapper;
+import com.innowise.orderservice.messaging.OrderEventProducer;
 import com.innowise.orderservice.model.StatusEnum;
 import com.innowise.orderservice.model.dto.OrderDto;
 import com.innowise.orderservice.model.dto.OrderUserDto;
 import com.innowise.orderservice.model.dto.UserDto;
 import com.innowise.orderservice.model.entity.Order;
+import com.innowise.orderservice.repository.ItemRepository;
 import com.innowise.orderservice.repository.OrderRepository;
 import com.innowise.orderservice.service.impl.OrderService;
 import com.innowise.orderservice.util.OrderSpecifications;
@@ -47,6 +49,8 @@ public class OrderServiceTests {
   @Mock private OrderRepository orderRepository;
   @Mock private OrderMapper orderMapper;
   @Mock private UserServiceClient userServiceClient;
+  @Mock private ItemRepository itemRepository;
+  @Mock private OrderEventProducer orderEventProducer;
 
   @InjectMocks private OrderService orderService;
 
@@ -62,11 +66,12 @@ public class OrderServiceTests {
 
     when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrderEntity));
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail())).thenReturn(List.of(mockUserDto));
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
+        .thenReturn(List.of(mockUserDto));
 
     OrderUserDto result = orderService.findById(orderId);
 
-    assertThat(result.orderDto().id()).isEqualTo(orderId);
+    assertThat(result.getOrderDto().id()).isEqualTo(orderId);
     verify(orderRepository).findById(orderId);
   }
 
@@ -102,11 +107,12 @@ public class OrderServiceTests {
     when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
     when(orderRepository.save(mockOrderEntity)).thenReturn(savedEntity);
     when(orderMapper.toDto(savedEntity)).thenReturn(savedDto);
-    when(userServiceClient.getUserByEmail("email", newDto.userEmail())).thenReturn(List.of(mockUserDto));
+    when(userServiceClient.getUserByEmail("email", newDto.userEmail()))
+        .thenReturn(List.of(mockUserDto));
 
     OrderUserDto result = orderService.create(newDto);
 
-    assertThat(result.orderDto().id()).isEqualTo(2L);
+    assertThat(result.getOrderDto().id()).isEqualTo(2L);
     verify(orderRepository).save(mockOrderEntity);
   }
 
@@ -122,7 +128,8 @@ public class OrderServiceTests {
     when(orderRepository.findOrderById(orderId)).thenReturn(Optional.of(mockOrderEntity));
 
     when(orderMapper.toDto(any(Order.class))).thenReturn(updateDto);
-    when(userServiceClient.getUserByEmail("email", updateDto.userEmail())).thenReturn(List.of(mockUserDto));
+    when(userServiceClient.getUserByEmail("email", updateDto.userEmail()))
+        .thenReturn(List.of(mockUserDto));
 
     orderService.updateById(orderId, updateDto);
 
@@ -231,7 +238,8 @@ public class OrderServiceTests {
 
     when(orderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(mockPage);
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail())).thenReturn(List.of(mockUserDto));
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
+        .thenReturn(List.of(mockUserDto));
 
     orderService.findAll(pageable);
 
@@ -246,7 +254,8 @@ public class OrderServiceTests {
 
     when(orderRepository.findAll(eq(dummySpec), eq(pageable))).thenReturn(mockPage);
     when(orderMapper.toDto(any(Order.class))).thenReturn(mockOrderDto);
-    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail())).thenReturn(List.of(mockUserDto));
+    when(userServiceClient.getUserByEmail("email", mockOrderDto.userEmail()))
+        .thenReturn(List.of(mockUserDto));
 
     Page<OrderUserDto> result = orderService.findBySpecification(dummySpec, pageable);
 
@@ -413,7 +422,8 @@ public class OrderServiceTests {
             List.of(),
             "new@test.com");
 
-    when(userServiceClient.getUserByEmail("email", newDto.userEmail())).thenReturn(List.of(mockUserDto));
+    when(userServiceClient.getUserByEmail("email", newDto.userEmail()))
+        .thenReturn(List.of(mockUserDto));
     when(orderMapper.toEntity(newDto)).thenReturn(mockOrderEntity);
     when(orderRepository.save(mockOrderEntity))
         .thenThrow(new RuntimeException("Database constraint violation"));

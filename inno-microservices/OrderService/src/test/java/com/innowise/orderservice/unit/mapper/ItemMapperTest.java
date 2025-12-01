@@ -187,4 +187,3 @@ public class ItemMapperTest {
     assertThat(entity.getName()).isEqualTo("Item with émoji 😀 & symbols!");
   }
 }
-

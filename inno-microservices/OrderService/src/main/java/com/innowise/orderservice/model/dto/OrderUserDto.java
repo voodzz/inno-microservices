@@ -1,3 +1,13 @@
 package com.innowise.orderservice.model.dto;
 
-public record OrderUserDto(OrderDto orderDto, UserDto userDto) {}
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class OrderUserDto {
+  private OrderDto orderDto;
+  private UserDto userDto;
+}
