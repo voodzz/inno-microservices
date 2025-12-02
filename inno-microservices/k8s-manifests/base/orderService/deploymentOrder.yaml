@@ -58,13 +58,13 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8083
-            initialDelaySeconds: 200
+            initialDelaySeconds: 50
             periodSeconds: 5
             timeoutSeconds: 10
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8083
-            initialDelaySeconds: 200
+            initialDelaySeconds: 50
             periodSeconds: 5
             timeoutSeconds: 10
