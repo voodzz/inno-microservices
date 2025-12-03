@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-auth
+  labels:
+    app: app-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-auth
+  template:
+    metadata:
+      name: app-auth
+      labels:
+        app: app-auth
+    spec:
+      containers:
+        - name: app-auth
+          image: voodz/authservice:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: system-config
+            - secretRef:
+                name: system-secrets
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: SPRING_DATASOURCE_URL_AUTHSERVICE
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 8082
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 50
+            periodSeconds: 5
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 50
+            periodSeconds: 5
+            timeoutSeconds: 10

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: system-config
+data:
+  USER_SERVICE_URL: http://service-user:8081
+  AUTH_SERVICE_URL: http://service-auth:8082
+  ORDER_SERVICE_URL: http://service-order:8083
+  PAYMENT_SERVICE_URL: http://service-payment:8084
+  SPRING_DATASOURCE_URL_USERSERVICE: jdbc:postgresql://userservice-postgres:5432/userservice
+  SPRING_DATASOURCE_URL_AUTHSERVICE: jdbc:postgresql://authservice-postgres:5432/authservice
+  SPRING_DATASOURCE_URL_ORDERSERVICE: jdbc:postgresql://orderservice-postgres:5432/orderservice
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: "6379"
+  MONGO_URL: mongodb://mongodb-service:27017/paymentservice
+  KAFKA_BOOTSTRAP_SERVERS: kafka.default:9092
+  DB_USER_SERVICE: userservice
+  DB_AUTH_SERVICE: authservice
+  DB_ORDER_SERVICE: orderservice
+  DB_PAYMENT_SERVICE: paymentservice

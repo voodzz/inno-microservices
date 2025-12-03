@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-payment
+  labels:
+    app: app-payment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-payment
+  template:
+    metadata:
+      name: app-payment
+      labels:
+        app: app-payment
+    spec:
+      containers:
+        - name: app-payment
+          image: voodz/paymentservice:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: system-config
+            - secretRef:
+                name: system-secrets
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: MONGO_URL
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka.default:9092"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+          ports:
+            - containerPort: 8084
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 50
+            periodSeconds: 5
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 50
+            periodSeconds: 5
+            timeoutSeconds: 10

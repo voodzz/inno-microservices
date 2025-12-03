@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-order
+  labels:
+    app: app-order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-order
+  template:
+    metadata:
+      name: app-order
+      labels:
+        app: app-order
+    spec:
+      containers:
+        - name: app-order
+          image: voodz/orderservice:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: system-config
+            - secretRef:
+                name: system-secrets
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: SPRING_DATASOURCE_URL_ORDERSERVICE
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: system-secrets
+                  key: DB_PASSWORD
+            - name: USERSERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: USER_SERVICE_URL
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka.default:9092"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: system-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+          ports:
+            - containerPort: 8083
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8083
+            initialDelaySeconds: 50
+            periodSeconds: 5
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8083
+            initialDelaySeconds: 50
+            periodSeconds: 5
+            timeoutSeconds: 10
